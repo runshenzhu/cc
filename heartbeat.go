@@ -56,7 +56,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	// construct response string
 	utc_t := time.Now().UTC()
-	t := utc_t.Add(-14400 * time.Second)
+	t := utc_t.Add(-4 * time.Hour)
 	output_str := team_info + "\n" +
 		t.Format("2006-01-02 15:04:05") + "\n" +
 		decode_str + "\n"
