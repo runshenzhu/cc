@@ -1,12 +1,12 @@
 package main
 
 import (
-	"time"
 	"fmt"
 	"math"
 	"math/big"
 	"net/http"
 	"runtime"
+	"time"
 )
 
 var X = new(big.Int)
@@ -15,8 +15,9 @@ const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // basic config
 const (
-	team_id = "Omegaga's Black Railgun"
-	team_account_id = "6537-0651-1730")
+	team_id         = "Omegaga's Black Railgun"
+	team_account_id = "6537-0651-1730"
+)
 
 func decode(a string, shift int) string {
 	n := len(a)
@@ -56,17 +57,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	decode_str := decode(message, int(z.Int64()))
 
 	// construct response string
-	utc_t := time.Now().UTC();
-	t := utc_t.Add(-14400 * time.Second);
+	utc_t := time.Now().UTC()
+	t := utc_t.Add(-14400 * time.Second)
 	fmt.Fprintf(w, "%s,%s\n%s\n%s\n",
-		team_id, team_account_id, 
+		team_id, team_account_id,
 		t.Format("2006-01-02 15:04:05"),
 		decode_str)
 }
 
 func main() {
 	X = new(big.Int)
-	//runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	X.SetString("8271997208960872478735181815578166723519929177896558845922250595511921395049126920528021164569045773", 10)
 	http.HandleFunc("/q1", handler)
 	http.ListenAndServe(":80", nil)
