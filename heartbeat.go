@@ -15,8 +15,7 @@ const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // basic config
 const (
-	team_id         = "Omegaga's Black Railgun"
-	team_account_id = "6537-0651-1730"
+	team_info = "Omegaga's Black Railgun,6537-0651-1730"
 )
 
 func decode(a string, shift int) string {
@@ -52,17 +51,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	keyInt.SetString(key, 10)
 	y := new(big.Int)
 	y.Div(keyInt, X)
-	z := new(big.Int)
-	z.Add(z.Mod(y, big.NewInt(25)), big.NewInt(1))
-	decode_str := decode(message, int(z.Int64()))
+	y_mod := int(y.Mod(y, big.NewInt(25)).Int64())
+	z := 1 + y_mod
+	decode_str := decode(message, z)
 
 	// construct response string
 	utc_t := time.Now().UTC()
 	t := utc_t.Add(-14400 * time.Second)
-	fmt.Fprintf(w, "%s,%s\n%s\n%s\n",
-		team_id, team_account_id,
-		t.Format("2006-01-02 15:04:05"),
-		decode_str)
+	output_str := team_info + "\n" + t.Format("2006-01-02 15:04:05") + "\n" + decode_str + "\n"
+	fmt.Fprint(w, output_str)
 }
 
 func main() {
