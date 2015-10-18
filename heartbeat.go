@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/big"
 	"net/http"
@@ -41,7 +40,7 @@ func decode(a string, shift int) string {
 			y--
 		}
 	}
-	return string(z[:n])
+	return string(z)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -58,8 +57,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// construct response string
 	utc_t := time.Now().UTC()
 	t := utc_t.Add(-14400 * time.Second)
-	output_str := team_info + "\n" + t.Format("2006-01-02 15:04:05") + "\n" + decode_str + "\n"
-	fmt.Fprint(w, output_str)
+	output_str := team_info + "\n" +
+		t.Format("2006-01-02 15:04:05") + "\n" +
+		decode_str + "\n"
+	w.Write([]byte(output_str))
 }
 
 func main() {
