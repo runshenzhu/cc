@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/big"
 	"net/http"
+	"runtime"
 )
 
 var X = new(big.Int)
@@ -55,9 +56,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	decode_str := decode(message, int(z.Int64()))
 
 	// construct response string
-	t := time.Now();
-	//yy, mm, dd:= t.Date()
-	//hh, min, sec := t.Clock()
+	utc_t := time.Now().UTC();
+	t := utc_t.Add(-14400 * time.Second);
 	fmt.Fprintf(w, "%s,%s\n%s\n%s\n",
 		team_id, team_account_id, 
 		t.Format("2006-01-02 15:04:05"),
@@ -66,6 +66,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	X = new(big.Int)
+	//runtime.GOMAXPROCS(runtime.NumCPU())
 	X.SetString("8271997208960872478735181815578166723519929177896558845922250595511921395049126920528021164569045773", 10)
 	http.HandleFunc("/q1", handler)
 	http.ListenAndServe(":80", nil)
