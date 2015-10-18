@@ -1,6 +1,7 @@
 package main
 
 import (
+	"time"
 	"fmt"
 	"math"
 	"math/big"
@@ -10,6 +11,11 @@ import (
 var X = new(big.Int)
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// basic config
+const (
+	team_id = "Omegaga's Black Railgun"
+	team_account_id = "6537-0651-1730")
 
 func decode(a string, shift int) string {
 	n := len(a)
@@ -47,7 +53,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	z := new(big.Int)
 	z.Add(z.Mod(y, big.NewInt(25)), big.NewInt(1))
 	decode_str := decode(message, int(z.Int64()))
-	fmt.Fprintf(w, decode_str)
+
+	// construct response string
+	t := time.Now();
+	//yy, mm, dd:= t.Date()
+	//hh, min, sec := t.Clock()
+	fmt.Fprintf(w, "%s,%s\n%s\n%s\n",
+		team_id, team_account_id, 
+		t.Format("2006-01-02 15:04:05"),
+		decode_str)
 }
 
 func main() {
