@@ -10,14 +10,14 @@ import (
 
 var X = new(big.Int)
 
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+// const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // basic config
 const (
 	team_info = "Omegaga's Black Railgun,6537-0651-1730"
 )
 
-func decode(a string, shift int) string {
+func decode(a string, shift byte) string {
 	n := len(a)
 	z := make([]byte, n)
 	x := 0
@@ -26,7 +26,7 @@ func decode(a string, shift int) string {
 	next := 0
 	for i := 0; i < n; i++ {
 		j := x*k + y
-		z[i] = alphabet[(int(a[j])-int('A')+26-shift)%26]
+		z[i] = 'A' + ( (a[j] - 'A' + 26 - shift) % 26 )
 		if x == k-1 {
 			y = k - 1
 			x = k - next
@@ -50,13 +50,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	keyInt.SetString(key, 10)
 	y := new(big.Int)
 	y.Div(keyInt, X)
-	y_mod := int(y.Mod(y, big.NewInt(25)).Int64())
-	z := 1 + y_mod
+
+	// y_mod := int(y.Mod(y, big.NewInt(25)).Int64())
+	z := 1 + byte(y.Int64() % 25) 
 	decode_str := decode(message, z)
 
 	// construct response string
-	utc_t := time.Now().UTC()
-	t := utc_t.Add(-14400 * time.Second)
+	// utc_t := time.Now().UTC()
+	// t := utc_t.Add(-14400 * time.Second)
+	t := time.Now()
 	output_str := team_info + "\n" +
 		t.Format("2006-01-02 15:04:05") + "\n" +
 		decode_str + "\n"
