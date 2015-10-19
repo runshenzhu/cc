@@ -43,7 +43,7 @@ func decode(a string, shift byte) string {
 	return string(z)
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func q1Handler(w http.ResponseWriter, r *http.Request) {
 	key := r.URL.Query().Get("key")
 	message := r.URL.Query().Get("message")
 	keyInt := new(big.Int)
@@ -65,10 +65,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(output_str))
 }
 
+func heartbeatHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("You are good\n"))
+}
+
 func main() {
 	X = new(big.Int)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	X.SetString("8271997208960872478735181815578166723519929177896558845922250595511921395049126920528021164569045773", 10)
-	http.HandleFunc("/q1", handler)
+	http.HandleFunc("/q1", q1Handler)
+	http.HandleFunc("/heartbeat", heartbeatHandler)
 	http.ListenAndServe(":80", nil)
 }
