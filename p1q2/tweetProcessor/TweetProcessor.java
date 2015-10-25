@@ -1,6 +1,7 @@
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.BufferedReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,8 +15,9 @@ public class TweetProcessor {
   private Preprocessor preprocessor;
   private Date startDate;
 
-  public TweetProcessor(String sentimentFilename, String bannedWordFilename) {
-    preprocessor = new Preprocessor(sentimentFilename, bannedWordFilename);
+  public TweetProcessor(BufferedReader sentimentBr,
+                        BufferedReader bannedWordBr) {
+    preprocessor = new Preprocessor(sentimentBr, bannedWordBr);
     try {
       startDate = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z")
           .parse("Sun, 20 Apr 2014 00:00:00 GMT");
@@ -122,6 +124,9 @@ public class TweetProcessor {
 
     if (date == null || date.before(startDate))
       return null;
+
+    DateFormat outFormat = new SimpleDateFormat("yyyy-MM-dd+HH:mm:ss");
+    ts.timestamp = outFormat.format(date);
 
     if (text == null)
       return null;

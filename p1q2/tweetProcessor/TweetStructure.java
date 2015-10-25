@@ -1,3 +1,5 @@
+import org.apache.commons.lang3.StringEscapeUtils;
+
 /**
  * Created by omega on 10/24/15.
  */
@@ -20,7 +22,7 @@ public class TweetStructure {
   public TweetStructure() {}
 
   public String toString() {
-    return id + "," + userId + "," + timestamp + "," + censoredText + "," +
-        score;
+    return id + "," + userId + "," + timestamp + "," +
+        StringEscapeUtils.escapeCsv(censoredText) + "," + score;
   }
 }

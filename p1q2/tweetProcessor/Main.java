@@ -9,8 +9,12 @@ public class Main {
   public static void main(String[] args) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader("part-00001"));
 
-    TweetProcessor processor = new TweetProcessor("afinn.txt", "banned.txt");
+    BufferedReader sentimentBr =
+        new BufferedReader(new FileReader("afinn.txt"));
+    BufferedReader bannedWordBr =
+        new BufferedReader(new FileReader("banned.txt"));
     try {
+      TweetProcessor processor = new TweetProcessor(sentimentBr, bannedWordBr);
       String line = br.readLine();
       while (line != null) {
         System.out.println(processor.handleLine(line));
@@ -18,6 +22,8 @@ public class Main {
       }
     } finally {
       br.close();
+      sentimentBr.close();
+      bannedWordBr.close();
     }
   }
 }
