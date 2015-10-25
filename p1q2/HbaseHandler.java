@@ -21,9 +21,9 @@ import java.nio.ByteBuffer;
  * Created by zrsh on 10/24/15.
  */
 public class HbaseHandler {
-    private String EMR = "ec2-52-91-91-20.compute-1.amazonaws.com";
-    private String TABLE = "test";
-    private String FAMILY = "obgun";
+    private String EMR;
+    private String TABLE;
+    private String FAMILY;
     private RemoteHTable table = null;
     public HbaseHandler(String emr, String table, String family) throws IOException{
         this.EMR = emr;
