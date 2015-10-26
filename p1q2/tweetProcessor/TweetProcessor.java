@@ -131,9 +131,12 @@ public class TweetProcessor {
     if (date == null || date.before(startDate))
       return null;
 
+    /*
     DateFormat outFormat = new SimpleDateFormat("yyyy-MM-dd+HH:mm:ss");
     outFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     ts.timestamp = outFormat.format(date);
+    */
+    ts.timestamp = ((Long)date.getTime()).toString();
 
     if (text == null)
       return null;
