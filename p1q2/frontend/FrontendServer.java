@@ -63,6 +63,6 @@ public class FrontendServer {
         }
         SQLHandler.setMySql(args[0], args[1], args[2]);
 
-        new FrontendServer(8080).run();
+        new FrontendServer(80).run();
     }
 }
