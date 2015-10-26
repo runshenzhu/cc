@@ -1,4 +1,4 @@
-LOAD DATA INFILE '/home/ubuntu/input.csv'
+LOAD DATA INFILE '/tmp/input.csv'
 INTO TABLE tweets
 FIELDS TERMINATED BY ','
       ESCAPED BY ''

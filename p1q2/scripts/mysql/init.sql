@@ -8,7 +8,7 @@ CREATE TABLE tweets (
   id bigint,
   user_id bigint,
   create_at timestamp,
-  text varchar(200) character set utf8,
+  text varchar(640) character set utf8,
   sentiment int
 )  CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE = INNODB;
 
