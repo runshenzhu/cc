@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 
 /**
@@ -126,6 +127,7 @@ public class TweetProcessor {
       return null;
 
     DateFormat outFormat = new SimpleDateFormat("yyyy-MM-dd+HH:mm:ss");
+    outFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     ts.timestamp = outFormat.format(date);
 
     if (text == null)
