@@ -25,4 +25,11 @@ public class TweetStructure {
     return id + "," + userId + "," + timestamp + "," +
         StringEscapeUtils.escapeCsv(censoredText) + "," + score;
   }
+  
+  public String toString(){
+        return "id: " + this.id + " userId: " + this.userId +
+                " timestamp: " + timestamp +
+                " text: " + this.censoredText +
+                " score: " + this.score;
+    }
 }
