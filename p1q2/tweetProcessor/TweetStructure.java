@@ -21,12 +21,8 @@ public class TweetStructure {
 
   public TweetStructure() {}
 
-  public TweetStructure( String csvLine ){
-
-  }
-
   public String toEscapeString() {
     return id + "," + userId + "," + timestamp + "," +
-        StringEscapeUtils.escapeCsv(StringEscapeUtils.escapeJava(censoredText) + "," + score);
+        StringEscapeUtils.escapeCsv(censoredText) + "," + score;
   }
 }

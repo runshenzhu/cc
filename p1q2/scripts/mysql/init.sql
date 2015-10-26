@@ -11,4 +11,3 @@ CREATE TABLE tweets (
   text varchar(640) character set utf8,
   sentiment int
 )  CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE = INNODB;
-
