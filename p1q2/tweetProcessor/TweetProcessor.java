@@ -14,17 +14,22 @@ import java.util.TimeZone;
  */
 public class TweetProcessor {
   private Preprocessor preprocessor;
-  private Date startDate;
+  private static final Date startDate = startDateSetter();
 
-  public TweetProcessor(BufferedReader sentimentBr,
-                        BufferedReader bannedWordBr) {
-    preprocessor = new Preprocessor(sentimentBr, bannedWordBr);
+  private static Date startDateSetter() {
+    Date date = null;
     try {
-      startDate = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z")
+      date = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z")
           .parse("Sun, 20 Apr 2014 00:00:00 GMT");
     } catch (ParseException e) {
       e.printStackTrace();
     }
+    return date;
+  }
+
+  public TweetProcessor(BufferedReader sentimentBr,
+                        BufferedReader bannedWordBr) {
+    preprocessor = new Preprocessor(sentimentBr, bannedWordBr);
   }
   private class TweetMetadata {
     public String censoredText;
