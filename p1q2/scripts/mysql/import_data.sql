@@ -1,4 +1,4 @@
-LOAD DATA INFILE '/tmp/input.csv'
+LOAD DATA LOCAL INFILE '/tmp/input.csv'
 INTO TABLE tweets
 FIELDS TERMINATED BY ','
       ESCAPED BY ''

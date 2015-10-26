@@ -109,21 +109,24 @@ public class TweetProcessor {
     JsonParser parser = new JsonParser();
     TweetStructure ts = new TweetStructure();
     String text;
+    String timeString;
     try {
       JsonObject json = (JsonObject) parser.parse(line);
       ts.id = json.get("id").getAsLong();
       ts.userId = json.get("user").getAsJsonObject().get("id").getAsLong();
       text = json.get("text").getAsString();
-      ts.timestamp = json.get("created_at").getAsString();
+      timeString = json.get("created_at").getAsString();
     } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
 
+    if (timeString == null)
+      return null;
     DateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
     Date date = null;
     try {
-      date = format.parse(ts.timestamp);
+      date = format.parse(timeString);
     } catch (ParseException e) {
       e.printStackTrace();
     }
@@ -136,7 +139,7 @@ public class TweetProcessor {
     outFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     ts.timestamp = outFormat.format(date);
     */
-    ts.timestamp = ((Long)date.getTime()).toString();
+    ts.timestamp = date.getTime();
 
     if (text == null)
       return null;

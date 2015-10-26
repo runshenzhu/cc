@@ -6,12 +6,12 @@ import org.apache.commons.lang3.StringEscapeUtils;
 public class TweetStructure {
   public long id;
   public long userId;
-  public String timestamp;
+  public long timestamp;
   public String censoredText;
-  public Integer score;
+  public int score;
 
   public TweetStructure(long id, long userId,
-                        String timestamp, String censoredText, Integer score) {
+                        long timestamp, String censoredText, Integer score) {
     this.id = id;
     this.userId = userId;
     this.timestamp = timestamp;
