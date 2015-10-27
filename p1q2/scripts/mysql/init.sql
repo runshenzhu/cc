@@ -10,4 +10,6 @@ CREATE TABLE tweets (
   create_at bigint,
   text varchar(640) character set utf8mb4,
   sentiment int
-)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE = INNODB;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE = INNODB
+PARTITION BY HASH(user_id)
+PARTITIONS 100;
