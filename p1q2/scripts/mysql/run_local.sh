@@ -1,5 +1,4 @@
 TMP_FILE='/tmp/input.csv'
-BASE_DIR='s3://jessesleep/ETL_test/final/'
 DATA_DIR='/home/ubuntu/data/'
 
 mysql -u root -pD807isfuckingyou < init.sql
