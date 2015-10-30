@@ -57,12 +57,22 @@ public class FrontendServer {
 
     public static void main(String[] args) throws Exception {
 
-        if( args.length != 3  ){
-            System.out.println("java FrontendServer <mysqlURL> <mysqlUser> <mysqlPasswd>");
-            return;
-        }
-        SQLHandler.setMySql(args[0], args[1], args[2]);
+//        if( args.length != 4  ){
+//            System.out.println("java FrontendServer <mysqlURL> <port> <mysqlUser> <mysqlPasswd>");
+//            return;
+//        }
+//        // Set up SQL
+//        if(!SQLHandler.setMySql(args[0], args[2], args[3])){
+//            System.out.println("Cannot set up sql connection.");
+//            System.exit(1);
+//        }
 
-        new FrontendServer(80).run();
+        // Set up HBase
+        if( !HbaseHandler.setHbase("127.0.0.1")){
+            System.out.println("Cannot set up Hbase");
+            System.exit(1);
+        }
+
+        new FrontendServer(Integer.valueOf(80)).run();
     }
 }
