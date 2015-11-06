@@ -9,7 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.HashSet;
 
 
 /**
@@ -72,24 +72,19 @@ public class TweetProcessor {
         ArrayList<HashtagStructure> hashtagList = new ArrayList<HashtagStructure>();
 
         // In case of duplicate hash tag in a single tweet
-        HashMap<String, HashtagStructure> hashtagLocalMap = new HashMap<String, HashtagStructure>();
+        HashSet<String> hashtagLocalSet = new HashSet<String>();
 
         for( String hashtag : tweet.hashtags ){
-            if( hashtagLocalMap.containsKey(hashtag) ){
+            if( hashtagLocalSet.contains(hashtag) ){
                 // TODO: handle duplicate hashtag in the same tweet
-                // HashtagStructure hashtagStruct = hashtagLocalMap.get(hashtag);
-                // hashtagStruct.count += 1;
                 continue;
             } else{
-                HashtagStructure hashtagStructure = new HashtagStructure();
-                hashtagStructure.hashtag = hashtag;
-                hashtagStructure.skewedTimestamp = TweetProcessor.skewTimeStamp(tweet.timestamp);
-                hashtagStructure.count = 1;
-                hashtagStructure.userList.add(tweet.userId);
-                hashtagStructure.sourceText = tweet.text;
+                HashtagStructure hashtagStructure = new HashtagStructure(
+                        hashtag, TweetProcessor.skewTimeStamp(tweet.timestamp),
+                        tweet.userId, tweet.text);
                 // Add to list
                 hashtagList.add(hashtagStructure);
-                hashtagLocalMap.put(hashtag, hashtagStructure);
+                hashtagLocalSet.add(hashtag);
             }
         }
 
@@ -101,17 +96,17 @@ public class TweetProcessor {
      * @param origTweet
      * @return
      */
-    public RefinedTweetStructure refineTweetStructure( TweetStructure origTweet ) {
-        RefinedTweetStructure refinedTweetStructure = new RefinedTweetStructure();
-        refinedTweetStructure.id = origTweet.id;
-        refinedTweetStructure.userId = origTweet.userId;
-        refinedTweetStructure.skewedTimestamp = TweetProcessor.skewTimeStamp(origTweet.timestamp);
+    public Q2Q3TweetStructure refineTweetStructure( TweetStructure origTweet ) {
+        Q2Q3TweetStructure q2Q3TweetStructure = new Q2Q3TweetStructure();
+        q2Q3TweetStructure.id = origTweet.id;
+        q2Q3TweetStructure.userId = origTweet.userId;
+        q2Q3TweetStructure.skewedTimestamp = TweetProcessor.skewTimeStamp(origTweet.timestamp);
 
         TweetProcessor.CensorSentimentResult censorSentimentResult = handleText(origTweet.text);
-        refinedTweetStructure.censoredText = censorSentimentResult.censoredText;
-        refinedTweetStructure.sentimentScore = censorSentimentResult.score;
-        refinedTweetStructure.impactScore = refinedTweetStructure.sentimentScore * (origTweet.follwersCount+1);
-        return refinedTweetStructure;
+        q2Q3TweetStructure.censoredText = censorSentimentResult.censoredText;
+        q2Q3TweetStructure.sentimentScore = censorSentimentResult.score;
+        q2Q3TweetStructure.impactScore = q2Q3TweetStructure.sentimentScore * (origTweet.follwersCount+1);
+        return q2Q3TweetStructure;
     }
 
     /**

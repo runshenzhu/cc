@@ -40,6 +40,7 @@ public class MapRedExtractInfo {
     public static class DeduplicationReducer
             extends Reducer<LongWritable,Text, NullWritable, Text> {
 
+        @Override
         public void reduce(LongWritable key, Iterable<Text> values,
                            Context context
         ) throws IOException, InterruptedException {

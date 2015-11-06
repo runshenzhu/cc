@@ -25,15 +25,15 @@ public class MapRedGenCsvQ2Q3 {
         ) throws IOException, InterruptedException {
             LongWritable keyOut = new LongWritable();
 
-            RefinedTweetStructure refinedTweet = new RefinedTweetStructure(value.toString());
+            Q2Q3TweetStructure tweet = new Q2Q3TweetStructure(value.toString());
 
-            keyOut.set(refinedTweet.userId);
+            keyOut.set(tweet.userId);
 
             context.write(keyOut, value);
         }
     }
 
-    public static class ShardPartitioner extends Partitioner<LongWritable, Text> {
+    public static class UidShardPartitioner extends Partitioner<LongWritable, Text> {
 
         @Override
         public int getPartition(LongWritable key, Text value, int numReduceTasks){
@@ -45,12 +45,13 @@ public class MapRedGenCsvQ2Q3 {
     public static class CsvTransformReducer
             extends Reducer<LongWritable,Text, NullWritable, Text> {
 
+        @Override
         public void reduce(LongWritable key, Iterable<Text> values,
                            Context context
         ) throws IOException, InterruptedException {
             for ( Text value : values ) {
                 Text valueOut = new Text();
-                RefinedTweetStructure tweet = new RefinedTweetStructure(value.toString());
+                Q2Q3TweetStructure tweet = new Q2Q3TweetStructure(value.toString());
                 valueOut.set(tweet.toEscapeString());
                 context.write(NullWritable.get(), valueOut);
             }
@@ -60,17 +61,21 @@ public class MapRedGenCsvQ2Q3 {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         if (args.length != 3) {
-            System.err.println("Usage: etl <in> <out> <shardCount>");
+            System.err.println("Usage: MapRedGenCsvQ2Q3 <in> <out> <shardCount>");
             System.exit(1);
         }
 
         Job job = Job.getInstance(conf, "CsvQ2Q3");
 
-        job.setPartitionerClass(ShardPartitioner.class);
+        job.setPartitionerClass(UidShardPartitioner.class);
         job.setJarByClass(MapRedGenCsvQ2Q3.class);
         job.setMapperClass(ShardMapper.class);
         job.setReducerClass(CsvTransformReducer.class);
-        job.setOutputKeyClass(LongWritable.class);
+
+        job.setMapOutputKeyClass(LongWritable.class);
+        job.setMapOutputValueClass(Text.class);
+
+        job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);
 
         job.setNumReduceTasks(Integer.valueOf(args[2]));

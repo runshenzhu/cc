@@ -3,7 +3,6 @@ import java.util.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -46,9 +45,10 @@ public class MapRedGenInfoQ4 {
     }
 
     public static class HashTagReducer
-            extends Reducer<LongWritable,Text, NullWritable, Text> {
+            extends Reducer<Text,Text, NullWritable, Text> {
 
-        public void reduce(LongWritable key, Iterable<Text> values,
+        @Override
+        public void reduce(Text key, Iterable<Text> values,
                            Context context
         ) throws IOException, InterruptedException {
             HashMap<Integer, HashtagStructure> hashtagMap = new HashMap<Integer, HashtagStructure>();
@@ -64,7 +64,7 @@ public class MapRedGenInfoQ4 {
 
                 if(hashtagMap.containsKey(dayTime)){
                     HashtagStructure tagRecord = hashtagMap.get(dayTime);
-                    // Update the exsiting record
+                    // Update the existing record
                     // Check duplicated user in the same day
                     if( !userCheck.get(dayTime).contains(userId)){
                         tagRecord.userList.add(userId);
@@ -76,7 +76,8 @@ public class MapRedGenInfoQ4 {
                     // Primary key: time ( smaller one wins ), Secondary key: string order( the one rank higher wins )
                     if( tag.skewedTimestamp < tagRecord.skewedTimestamp
                             || ( tag.skewedTimestamp == tagRecord.skewedTimestamp &&
-                            tag.sourceText.compareTo(tagRecord.sourceText) < 0 )){
+                                tag.sourceText.compareTo(tagRecord.sourceText) < 0 )){
+                        tagRecord.skewedTimestamp = tag.skewedTimestamp;
                         tagRecord.sourceText = tag.sourceText;
                     }
 
@@ -89,9 +90,8 @@ public class MapRedGenInfoQ4 {
             }
 
             // Output the map
-            for(Map.Entry entry : hashtagMap.entrySet() ){
+            for(HashtagStructure htag : hashtagMap.values() ){
                 Text valueOut = new Text();
-                HashtagStructure htag = (HashtagStructure)(entry.getValue());
                 // Sort the user in ascending order
                 Collections.sort( htag.userList );
                 valueOut.set(htag.toJsonLine());
@@ -103,16 +103,16 @@ public class MapRedGenInfoQ4 {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         if (args.length != 3) {
-            System.err.println("Usage: MapRedExtractInfo <in> <out> <shardCount>");
+            System.err.println("Usage: MapRedGenInfoQ4 <in> <out> <shardCount>");
             System.exit(1);
         }
 
         Job job = Job.getInstance(conf, "Q4");
 
-        job.setPartitionerClass(HashTagShardPartitioner.class);
-        job.setJarByClass(MapRedExtractInfo.class);
+        job.setJarByClass(MapRedGenInfoQ4.class);
         job.setMapperClass(HashTagMapper.class);
         job.setReducerClass(HashTagReducer.class);
+        job.setPartitionerClass(HashTagShardPartitioner.class);
 
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(Text.class);

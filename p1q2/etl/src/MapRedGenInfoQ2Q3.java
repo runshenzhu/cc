@@ -49,7 +49,7 @@ public class MapRedGenInfoQ2Q3 {
 
             String line = value.toString();
             TweetStructure origTweet = new TweetStructure(line);
-            RefinedTweetStructure refinedTweet = tweetProcessor.refineTweetStructure(origTweet);
+            Q2Q3TweetStructure refinedTweet = tweetProcessor.refineTweetStructure(origTweet);
 
             valueOut.set(refinedTweet.toJsonLine());
 
@@ -99,6 +99,7 @@ public class MapRedGenInfoQ2Q3 {
         job.setJarByClass(MapRedGenInfoQ2Q3.class);
         job.setMapperClass(RefineMapper.class);
         job.setReducerClass(SimpleReducer.class);
+
         job.setOutputKeyClass(LongWritable.class);
         job.setOutputValueClass(Text.class);
 
