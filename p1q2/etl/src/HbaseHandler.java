@@ -1,29 +1,29 @@
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.MasterNotRunningException;
-import org.apache.hadoop.hbase.ZooKeeperConnectionException;
-import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.filter.CompareFilter;
-import org.apache.hadoop.hbase.filter.FilterList;
-import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
-import org.apache.hadoop.hbase.rest.client.Client;
-import org.apache.hadoop.hbase.rest.client.Cluster;
-import org.apache.hadoop.hbase.rest.client.RemoteHTable;
-import org.apache.hadoop.hbase.util.Bytes;
-
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-
-/**
- * Created by zrsh on 10/24/15.
- */
-public class HbaseHandler {
+//import org.apache.commons.csv.CSVFormat;
+//import org.apache.commons.csv.CSVParser;
+//import org.apache.commons.csv.CSVRecord;
+//import org.apache.hadoop.conf.Configuration;
+//import org.apache.hadoop.hbase.HBaseConfiguration;
+//import org.apache.hadoop.hbase.MasterNotRunningException;
+//import org.apache.hadoop.hbase.ZooKeeperConnectionException;
+//import org.apache.hadoop.hbase.client.*;
+//import org.apache.hadoop.hbase.filter.CompareFilter;
+//import org.apache.hadoop.hbase.filter.FilterList;
+//import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+//import org.apache.hadoop.hbase.rest.client.Client;
+//import org.apache.hadoop.hbase.rest.client.Cluster;
+//import org.apache.hadoop.hbase.rest.client.RemoteHTable;
+//import org.apache.hadoop.hbase.util.Bytes;
+//
+//import java.io.FileReader;
+//import java.io.IOException;
+//import java.util.ArrayList;
+//import java.util.List;
+//
+//
+///**
+// * Created by zrsh on 10/24/15.
+// */
+//public class HbaseHandler {
 //    private String EMR;
 //    private String TABLE;
 //    private byte[] FAMILY;
@@ -190,4 +190,4 @@ public class HbaseHandler {
 //        }
 //
 //    }
-}
+//}

@@ -6,10 +6,10 @@ import java.io.IOException;
 /**
  * Created by jessesleep on 11/1/15.
  */
-public class Json2JsonTester2 {
+public class Tester2 {
     public static void main( String [] args ) throws IOException {
         if( args.length != 2 ){
-            System.out.println("Json2JsonTester <in> <out>");
+            System.out.println("Tester <in> <out>");
             System.exit(1);
         }
 

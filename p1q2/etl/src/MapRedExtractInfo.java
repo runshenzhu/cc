@@ -1,12 +1,7 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -15,9 +10,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
 
-public class Json2Json {
+public class MapRedExtractInfo {
 
     public static class TweetExtracter
             extends Mapper<Object, Text, LongWritable, Text>{
@@ -29,7 +23,7 @@ public class Json2Json {
             LongWritable keyOut = new LongWritable();
 
             String line = value.toString();
-            TweetStructure tweet = TweetFilter.extractTweetStructure(line);
+            TweetStructure tweet = TweetProcessor.extractTweetStructure(line);
             // Skip bad line
             if( tweet == null ) {
                 System.out.println("[Info] Json parse failed: "+value.toString());
@@ -59,15 +53,13 @@ public class Json2Json {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        GenericOptionsParser optionParser = new GenericOptionsParser(conf, args);
-        String[] remainingArgs = optionParser.getRemainingArgs();
-        if (remainingArgs.length != 2) {
-            System.err.println("Usage: Json2Json <in> <out>");
+        if (args.length != 2) {
+            System.err.println("Usage: MapRedExtractInfo <in> <out>");
             System.exit(2);
         }
 
-        Job job = Job.getInstance(conf, "Json2Json");
-        job.setJarByClass(Json2Json.class);
+        Job job = Job.getInstance(conf, "MapRedExtractInfo");
+        job.setJarByClass(MapRedExtractInfo.class);
         job.setMapperClass(TweetExtracter.class);
         job.setReducerClass(DeduplicationReducer.class);
 
@@ -77,8 +69,8 @@ public class Json2Json {
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);
 
-        FileInputFormat.addInputPath(job, new Path(remainingArgs[0]));
-        FileOutputFormat.setOutputPath(job, new Path(remainingArgs[1]));
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
