@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.TimeZone;
 
 
 /**
@@ -116,6 +117,20 @@ public class TweetProcessor {
      */
     public static int skewTimeStamp( long timestamp ){
         return (int)((timestamp - startTimestamp)/1000);
+    }
+
+
+    /**
+     * Translate skewTime into date string
+     * @param skewTime
+     * @return
+     */
+    public static String skewedTime2Date( long skewTime ){
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        long timeInMs = (skewTime * 1000) + TweetProcessor.startTimestamp;
+        Date date = new Date(timeInMs);
+        return format.format(date);
     }
 
     /**

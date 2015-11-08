@@ -23,10 +23,17 @@ public class HBasePutQ2Q3 {
 
     private static final int LINECOUNT = 100000;
 
+    /**
+     * Get row key
+     * @param tweet
+     * @return
+     */
     private static byte[] getRowkey( Q2Q3TweetStructure tweet ){
-        int hashvalue = String.valueOf(tweet.userId).hashCode();
-        byte [] rowkey = Bytes.add(Bytes.toBytes(hashvalue),
-                Bytes.toBytes(tweet.userId), Bytes.toBytes(tweet.skewedTimestamp));
+        // int hashvalue = String.valueOf(tweet.userId).hashCode();
+        //byte [] rowkey = Bytes.add(Bytes.toBytes(hashvalue),
+        //        Bytes.toBytes(tweet.userId), Bytes.toBytes(tweet.skewedTimestamp));
+
+        byte [] rowkey = Bytes.add(Bytes.toBytes(tweet.userId), Bytes.toBytes(tweet.skewedTimestamp));
         return rowkey;
     }
 

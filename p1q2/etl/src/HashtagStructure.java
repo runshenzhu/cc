@@ -6,7 +6,7 @@ import java.util.ArrayList;
 /**
  * Created by jessesleep on 11/5/15.
  */
-public class HashtagStructure {
+public class HashtagStructure implements Comparable {
     public String hashtag;
     public int skewedTimestamp;
     int count;
@@ -15,6 +15,23 @@ public class HashtagStructure {
 
     public HashtagStructure(){
         userList = new ArrayList<Long>();
+    }
+
+    @Override
+    public int compareTo(Object that){
+        int hashtagDiff = this.hashtag.compareTo(((HashtagStructure)that).hashtag);
+        if( hashtagDiff == 0 ){
+            int countDiffRev = ((HashtagStructure) that).count - this.count;
+            if( countDiffRev == 0 ){
+                return this.skewedTimestamp - ((HashtagStructure) that).skewedTimestamp;
+            }
+            else{
+                return countDiffRev;
+            }
+        }
+        else{
+            return hashtagDiff;
+        }
     }
 
     public HashtagStructure(String jsonLine ){
@@ -36,6 +53,7 @@ public class HashtagStructure {
         this.userList.add(userid);
         this.sourceText = sourceText;
     }
+
 
     public String toJsonLine(){
         Gson gson = new Gson();
