@@ -47,22 +47,8 @@ public class Q2Q3TweetStructure {
     public String toEscapeString() {
         return id + "," + userId + "," + skewedTimestamp + "," +
                 sentimentScore + "," + impactScore + "," +
-                StringEscapeUtils.escapeCsv(censoredText);
+                "\"" + StringEscapeUtils.escapeCsv(censoredText) + "\"";
     }
 
-    /**
-     * For debug usage
-     * @return
-     */
-//    public String toString(){
-//        String res = "id: " + this.id + " userId: " + this.userId + " timestamp: " + timestamp +
-//                "\n\ttext: " + this.text +
-//                "\n\tfollowersCount: " + this.follwersCount +
-//                "\n\tHashtags: ";
-//        for( String tag : this.hashtags ){
-//            res += tag+",";
-//        }
-//
-//        return res+"\n";
-//    }
+
 }
