@@ -6,6 +6,11 @@
     <groupId>com.obgun.frontend</groupId>
     <artifactId>ObgunFrontend</artifactId>
     <version>0.1</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <main.class>com.obgun.frontend.Main</main.class>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -65,8 +70,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>io.vertx.core.Launcher</Main-Class>
-                                        <Main-Verticle>com.obgun.frontend.ServerVerticle</Main-Verticle>
+                                        <Main-Class>${main.class}</Main-Class>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>

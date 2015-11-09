@@ -214,6 +214,8 @@ public class HbaseHandler {
 
         // not hit
         Get get = new Get(row);
+        get.addColumn(FAMILY, TEXT);
+        get.addColumn(FAMILY, SCORE);
         HTableInterface table = null;
         try {
             //Create the CSVFormat object with the header mapping

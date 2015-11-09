@@ -4,7 +4,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,14 +14,19 @@ import java.util.concurrent.Executors;
  */
 public class ServerVerticle extends AbstractVerticle {
   private static int PORT = 80;
-    ExecutorService threadPool = Executors.newFixedThreadPool(200);
-  private static void handleQ1(RoutingContext routingContext) {
+
+    final static ExecutorService threadPool = Executors.newFixedThreadPool(40);
+  final private static void handleQ1(RoutingContext routingContext) {
     routingContext.response().end(
         com.obgun.frontend.Q1Util.retStringGenerator(routingContext.request().getParam("key"),
                 routingContext.request().getParam("message")));
   }
+    final private static void handleHeartBeat(RoutingContext routingContext) {
+        routingContext.response().end("xx CC");
+    }
 
-  private void handleQ2(RoutingContext routingContext) {
+
+  final private void handleQ2(RoutingContext routingContext) {
       vertx.<String>executeBlocking(future -> {
 
           // Do the blocking operation in here
@@ -47,8 +51,8 @@ public class ServerVerticle extends AbstractVerticle {
       });
   }
 
-    private void handleQ2ThreadPool(RoutingContext routingContext){
-        class Worker implements Runnable{
+    final static private void handleQ2ThreadPool(RoutingContext routingContext){
+        final class Worker implements Runnable{
             public void run(){
                 String userid = routingContext.request().getParam("userid");
                 String timeStamp = routingContext.request().getParam("tweet_time");
@@ -63,16 +67,18 @@ public class ServerVerticle extends AbstractVerticle {
     }
 
   @Override
-  public void start() throws Exception {
+  final public void start() throws Exception {
     // JDBCClient client = JDBCClient.createShared(vertx, config);
-    HbaseHandler.setHbase("ec2-54-172-51-57.compute-1.amazonaws.com");
+      System.out.println(context.config());
+    HbaseHandler.setHbase("ec2-54-152-174-216.compute-1.amazonaws.com");
     final Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     router.get("/q1").handler(ServerVerticle::handleQ1);
-    router.get("/q2").handler(this::handleQ2ThreadPool);
+    //router.get("/q2").handler(ServerVerticle::handleQ2ThreadPool);
+      router.get("/q2").handler(this::handleQ2);
+      router.get("/heartbeat").handler(ServerVerticle::handleHeartBeat);
     vertx.createHttpServer()
         .requestHandler(router::accept)
         .listen(PORT);
   }
 }
-
