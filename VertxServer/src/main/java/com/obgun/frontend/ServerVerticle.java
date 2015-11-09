@@ -25,6 +25,30 @@ public class ServerVerticle extends AbstractVerticle {
         routingContext.response().end("xx CC");
     }
 
+  final private void handleQ2MySQL(RoutingContext routingContext) {
+      vertx.<String>executeBlocking(future -> {
+
+          // Do the blocking operation in here
+
+          // Imagine this was a call to a blocking API to get the result
+          String userid = routingContext.request().getParam("userid");
+          String timeStamp = routingContext.request().getParam("tweet_time");
+          String result = "Omegaga's Black Railgun,6537-0651-1730\n";
+          try {
+              result += SQLHandler.getSqlAnswerQ2(userid, timeStamp);
+          } catch (Exception ignore) {
+              System.out.println("Q2 bad request: " + userid + " " + timeStamp);
+          }
+          future.complete(result);
+
+      }, false, res -> {
+          if (res.succeeded()) {
+              routingContext.response().putHeader("content-type", "text/plain").end(res.result());
+          } else {
+              res.cause().printStackTrace();
+          }
+      });
+  }
 
   final private void handleQ2(RoutingContext routingContext) {
       vertx.<String>executeBlocking(future -> {
@@ -70,12 +94,22 @@ public class ServerVerticle extends AbstractVerticle {
   final public void start() throws Exception {
     // JDBCClient client = JDBCClient.createShared(vertx, config);
       System.out.println(context.config());
-    HbaseHandler.setHbase("ec2-54-152-174-216.compute-1.amazonaws.com");
+    String[] urls = {
+        "ec2-54-173-250-97.compute-1.amazonaws.com",
+        "ec2-52-91-96-146.compute-1.amazonaws.com",
+        "ec2-54-209-163-93.compute-1.amazonaws.com",
+        "ec2-54-209-161-167.compute-1.amazonaws.com",
+        "ec2-54-209-162-203.compute-1.amazonaws.com",
+        "ec2-54-209-163-194.compute-1.amazonaws.com"
+    };
+    SQLHandler.setMySql(urls, "obgun", "D807isfuckingyou");
+    //HbaseHandler.setHbase("ec2-54-152-174-216.compute-1.amazonaws.com");
     final Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     router.get("/q1").handler(ServerVerticle::handleQ1);
     //router.get("/q2").handler(ServerVerticle::handleQ2ThreadPool);
-      router.get("/q2").handler(this::handleQ2);
+    //router.get("/q2").handler(this::handleQ2);
+      router.get("/q2").handler(this::handleQ2MySQL);
       router.get("/heartbeat").handler(ServerVerticle::handleHeartBeat);
     vertx.createHttpServer()
         .requestHandler(router::accept)
