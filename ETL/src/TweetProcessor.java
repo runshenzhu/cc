@@ -61,7 +61,7 @@ public class TweetProcessor {
      * @return
      */
     public static int skewedTimestampRoundToDay( int skewedTimestamp ){
-        return skewedTimestamp % secondInDay;
+        return skewedTimestamp / secondInDay;
     }
 
     /**
