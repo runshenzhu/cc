@@ -7,10 +7,7 @@ import java.io.BufferedReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.TimeZone;
+import java.util.*;
 
 
 /**
@@ -73,22 +70,24 @@ public class TweetProcessor {
         ArrayList<HashtagStructure> hashtagList = new ArrayList<HashtagStructure>();
 
         // In case of duplicate hash tag in a single tweet
-        HashSet<String> hashtagLocalSet = new HashSet<String>();
+        Map<String, HashtagStructure> hashtagLocalMap = new HashMap<String, HashtagStructure>();
 
         for( String hashtag : tweet.hashtags ){
-            if( hashtagLocalSet.contains(hashtag) ){
-                // TODO: handle duplicate hashtag in the same tweet
+            if( hashtagLocalMap.containsKey(hashtag) ){
+                hashtagLocalMap.get(hashtag).count += 1;
                 continue;
             } else{
                 HashtagStructure hashtagStructure = new HashtagStructure(
                         hashtag, TweetProcessor.skewTimeStamp(tweet.timestamp),
                         tweet.userId, tweet.text);
                 // Add to list
-                hashtagList.add(hashtagStructure);
-                hashtagLocalSet.add(hashtag);
+                hashtagLocalMap.put(hashtag, hashtagStructure);
             }
         }
 
+        for( Map.Entry<String, HashtagStructure> entry : hashtagLocalMap.entrySet() ){
+            hashtagList.add(entry.getValue());
+        }
         return hashtagList;
     }
 
