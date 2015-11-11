@@ -13,18 +13,24 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Executors;
 
-public class HbaseHandler {
+final public class HbaseHandler {
     // Column name
+    // TODO: change table, colo and family name
+    static final private byte[] TEXT = Bytes.toBytes("text");
+    static final private byte[] SCORE = Bytes.toBytes("sentiment");
+    static final private byte[] Q4C = Bytes.toBytes("v");
+    /*
     private static final byte[] TEXT = Bytes.toBytes("t");
     private static final byte[] SCORE = Bytes.toBytes("s");
+    */
     private static final byte[] IMPACT = Bytes.toBytes("i");
     // TODO: set the sheet name here !!!!!
-    private static final String TABLE = "twitter";
+    //private static final String TABLE = "twitter";
+    private static final String TABLE = "tweet";
+    private static final String TABLEQ4 = "hashtag";
     private static final byte[] FAMILY = Bytes.toBytes("o");
 
     private static String hbaseUrl;
@@ -46,7 +52,7 @@ public class HbaseHandler {
 //        return dateFormat;
 //    }
 
-    static class ImpactTweet implements Comparable {
+    final static class ImpactTweet implements Comparable {
         int skewedTimestamp;
         long tweetid;
         String text;
@@ -71,13 +77,15 @@ public class HbaseHandler {
         }
     }
 
-    public static boolean setHbase( String url ){
+    final public static boolean setHbase( String url ){
         hbaseUrl = url;
 
         hbaseConfig = HBaseConfiguration.create();
+        hbaseConfig.clear();
+        hbaseConfig.addResource("hbase-site.xml");
         hbaseConfig.set("hbase.zookeeper.quorum", hbaseUrl);
         hbaseConfig.set("hbase.zookeeper.property.clientPort", "2181");
-
+        hbaseConfig.set("hbase.master", url + ":60010");
         try {
             HBaseAdmin.checkHBaseAvailable(hbaseConfig);
             hConnection = HConnectionManager.createConnection(hbaseConfig /*, Executors.newFixedThreadPool(200)*/);
@@ -95,7 +103,7 @@ public class HbaseHandler {
         return true;
     }
 
-    public static String skewedTime2Date( long skewTime ){
+    final public static String skewedTime2Date( long skewTime ){
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         format.setTimeZone(TimeZone.getTimeZone("GMT"));
         long timeInMs = (skewTime * 1000) + TweetProcessor.startTimestamp;
@@ -103,7 +111,7 @@ public class HbaseHandler {
         return format.format(date);
     }
 
-    public static String getHbaseAnswerQ3( String userId, String startDate, String endDate, String nStr ){
+    final public static String getHbaseAnswerQ3( String userId, String startDate, String endDate, String nStr ){
         int startSkew, endSkew;
         try {
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -140,13 +148,15 @@ public class HbaseHandler {
         scan.setMaxVersions(100);
         scan.addColumn(FAMILY, IMPACT);
         scan.addColumn(FAMILY, TEXT);
-
+        scan.setCacheBlocks(true);
+        scan.setCaching(200);
         HTableInterface table = null;
         ArrayList<ImpactTweet> tweets = new ArrayList<ImpactTweet>();
-
+        ResultScanner scanner = null;
         try {
             table = hConnection.getTable(TABLE);
-            ResultScanner scanner = table.getScanner(scan);
+            scanner = table.getScanner(scan);
+
             Result rr;
             while( (rr = scanner.next()) != null ){
                 int skewTs = Bytes.toInt(Bytes.tail(rr.getRow(), 4));
@@ -161,6 +171,12 @@ public class HbaseHandler {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            if(scanner != null){
+                try{
+                    scanner.close();
+                }catch (Exception e){}
+            }
         }
 
         Collections.sort(tweets);
@@ -190,7 +206,7 @@ public class HbaseHandler {
         return positiveBuilder.toString()+negativeBuilder.toString();
     }
 
-    public static String getHbaseAnswerQ2(String userId, String time){
+    final public static String getHbaseAnswerQ2(String userId, String time){
         long timestamp;
 
         try {
@@ -205,17 +221,17 @@ public class HbaseHandler {
 
         int skewedTimestamp = TweetProcessor.skewTimeStamp(timestamp);
         int hashCode = (userId).hashCode();
-
+/*
         byte [] row = Bytes.add( Bytes.toBytes(hashCode),
                 Bytes.toBytes(Long.parseLong(userId)),
-                Bytes.toBytes(skewedTimestamp));
+                Bytes.toBytes(skewedTimestamp));*/
+        byte[] row = Bytes.add(Bytes.toBytes(Long.parseLong(userId)),
+                Bytes.toBytes(timestamp));
         String res = "";
 
 
         // not hit
         Get get = new Get(row);
-        get.addColumn(FAMILY, TEXT);
-        get.addColumn(FAMILY, SCORE);
         HTableInterface table = null;
         try {
             //Create the CSVFormat object with the header mapping
@@ -230,7 +246,6 @@ public class HbaseHandler {
                 res += Bytes.toInt(score.get(i).getValue())+":";
                 res += Bytes.toString(texts.get(i).getValue())+"\n";
             }
-
         }catch (IOException e){
             e.printStackTrace();
             res = null;
@@ -245,6 +260,48 @@ public class HbaseHandler {
             }
         }
         return res;
+    }
+
+    final static String getHbaseAnswerQ4(String tag, String rank){
+        int start = 0;
+        int end = Integer.parseInt(rank);
+        byte[] startRow = Bytes.add(Bytes.toBytes(tag),
+                Bytes.toBytes(start));
+        byte[] endRow = Bytes.add(Bytes.toBytes(tag),
+                Bytes.toBytes(end));
+
+        Scan scan = new Scan(startRow, endRow);
+        scan.addColumn(FAMILY, Q4C);
+        scan.setCacheBlocks(true);
+        scan.setCaching(end);
+        HTableInterface table = null;
+        ResultScanner scanner = null;
+        String ret = "";
+        try{
+            table = hConnection.getTable(TABLEQ4);
+            scanner = table.getScanner(scan);
+
+            Result rr;
+            while( (rr = scanner.next()) != null ){
+                // TODO: use string builder
+                // TODO: delete \n
+               ret += Bytes.toString(rr.getValue(FAMILY, Q4C)) + "\n";
+            }
+        }catch (Exception e){}
+        finally {
+            try{
+                if (table != null){
+                    table.close();
+                }
+            }catch (Exception e){}
+            try {
+                if (scanner != null){
+                    scanner.close();
+                }
+            }catch (Exception e){}
+
+            return ret;
+        }
     }
 
 }
