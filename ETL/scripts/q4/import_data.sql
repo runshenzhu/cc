@@ -12,4 +12,4 @@ FIELDS TERMINATED BY ','
       ESCAPED BY ''
       ENCLOSED by '"'
 LINES TERMINATED BY '\n'
-(hashtag, create_at, count, user_list, tweet);
+(hashtag, rank, value);
