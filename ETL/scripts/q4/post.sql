@@ -1,2 +1,2 @@
 -- CREATE INDEX tweets_timestamp_index ON tweets (user_id ASC, create_at ASC) USING BTREE;
-ALTER TABLE hashtags ADD PRIMARY KEY (hashtag, create_at);
+ALTER TABLE hashtags ADD PRIMARY KEY (hashtag, rank);
