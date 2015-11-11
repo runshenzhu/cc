@@ -1,7 +1,7 @@
 TMP_FILE='/tmp/input.csv'
-DATA_DIR='/home/ubuntu/data/'
+DATA_DIR='/home/ubuntu/data/q4/'
 
-mysql -u root -pD807isfuckingyou < init.sql
+mysql -u root -pD807isfuckingyou twitter < init.sql
 [ -e $TMP_FILE ] && rm $TMP_FILE
 
 echo 'loading to sql' $1

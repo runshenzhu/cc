@@ -7,10 +7,7 @@ import java.io.BufferedReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.TimeZone;
+import java.util.*;
 
 
 /**
@@ -61,7 +58,7 @@ public class TweetProcessor {
      * @return
      */
     public static int skewedTimestampRoundToDay( int skewedTimestamp ){
-        return skewedTimestamp % secondInDay;
+        return skewedTimestamp / secondInDay;
     }
 
     /**
@@ -73,22 +70,24 @@ public class TweetProcessor {
         ArrayList<HashtagStructure> hashtagList = new ArrayList<HashtagStructure>();
 
         // In case of duplicate hash tag in a single tweet
-        HashSet<String> hashtagLocalSet = new HashSet<String>();
+        Map<String, HashtagStructure> hashtagLocalMap = new HashMap<String, HashtagStructure>();
 
         for( String hashtag : tweet.hashtags ){
-            if( hashtagLocalSet.contains(hashtag) ){
-                // TODO: handle duplicate hashtag in the same tweet
+            if( hashtagLocalMap.containsKey(hashtag) ){
+                hashtagLocalMap.get(hashtag).count += 1;
                 continue;
             } else{
                 HashtagStructure hashtagStructure = new HashtagStructure(
                         hashtag, TweetProcessor.skewTimeStamp(tweet.timestamp),
                         tweet.userId, tweet.text);
                 // Add to list
-                hashtagList.add(hashtagStructure);
-                hashtagLocalSet.add(hashtag);
+                hashtagLocalMap.put(hashtag, hashtagStructure);
             }
         }
 
+        for( Map.Entry<String, HashtagStructure> entry : hashtagLocalMap.entrySet() ){
+            hashtagList.add(entry.getValue());
+        }
         return hashtagList;
     }
 
@@ -275,57 +274,4 @@ public class TweetProcessor {
         }
         return new CensorSentimentResult(censoredText, sentiment);
     }
-
-//    public TweetStructure handleLine(String line) {
-//        JsonParser parser = new JsonParser();
-//        TweetStructure ts = new TweetStructure();
-//        String text;
-//        String timeString;
-//        try {
-//            JsonObject json = (JsonObject) parser.parse(line);
-//            ts.id = json.get("id").getAsLong();
-//            ts.userId = json.get("user").getAsJsonObject().get("id").getAsLong();
-//            ts.follwersCount = json.get("user").getAsJsonObject().get("follwers_count").getAsInt();
-//
-//            JsonArray hashtags = json.get("entities").getAsJsonObject().get("hashtags").getAsJsonArray();
-//            for(JsonElement hashtag : hashtags){
-//                ts.hashtags.add(hashtag.getAsJsonObject().get("text").getAsString());
-//            }
-//
-//            text = json.get("text").getAsString();
-//            timeString = json.get("created_at").getAsString();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//
-//        if (timeString == null)
-//            return null;
-//        DateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
-//        Date date = null;
-//        try {
-//            date = format.parse(timeString);
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//
-//        // Move the start data check to the front end, for ETL, we reserve all tweets
-//        if (date == null /*|| date.before(startDate)*/)
-//            return null;
-//
-//    /*
-//    DateFormat outFormat = new SimpleDateFormat("yyyy-MM-dd+HH:mm:ss");
-//    outFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-//    ts.timestamp = outFormat.format(date);
-//    */
-//        ts.timestamp = date.getTime();
-//
-//        if (text == null)
-//            return null;
-//        CensorSentimentResult p = handleText(text);
-//
-//        ts.score = p.score;
-//        ts.censoredText = p.censoredText;
-//        return ts;
-//    }
 }
