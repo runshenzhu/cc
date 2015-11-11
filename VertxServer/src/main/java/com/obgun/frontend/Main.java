@@ -7,6 +7,15 @@ public class Main{
     public static void main(String[] args) throws Exception {
         //System.setProperty("vertx.disableFileCaching", "true");
         //System.out.println("in main");
+        if( args.length != 1 ){
+            System.out.println("java for <inputQ4file>");
+        }
+
+        if( !Q4MemStore.initCache(args[0]) ){
+            System.out.println("Load Q4 Mem failed");
+            System.exit(1);
+        }
+
         final VertxOptions options = new VertxOptions().setWorkerPoolSize(128);
         final Vertx vertx = Vertx.vertx(options);
         vertx.deployVerticle("com.obgun.frontend.ServerVerticle");
