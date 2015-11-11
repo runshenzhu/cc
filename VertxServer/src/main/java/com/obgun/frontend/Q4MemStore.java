@@ -1,5 +1,8 @@
 package com.obgun.frontend;
 
+import io.vertx.core.impl.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -26,20 +29,21 @@ public class Q4MemStore {
             for( Long user : hashtagStructure.userList ){
                 userlist.add(user);
             }
+            userlist.trimToSize();
             this.sourceText = hashtagStructure.sourceText;
         }
     }
 
-    private static void addMap( List<HashtagStructure> hashtags ){
-        if( !q4CacheMap.containsKey(hashtags.get(0).hashtag) ){
-            q4CacheMap.put(hashtags.get(0).hashtag, new ArrayList<HashtagInternal>());
+    private static void addMap( List<HashtagStructure> hashtags ) throws Exception{
+        String key = hashtags.get(0).hashtag;
+        if( !q4CacheMap.containsKey(key) ){
+            q4CacheMap.put(key, new ArrayList<HashtagInternal>());
         }
 
         for( HashtagStructure hashtag : hashtags ){
-            hashtag.userList.trimToSize();
-            q4CacheMap.get(hashtag.hashtag).add(new HashtagInternal(hashtag));
+            q4CacheMap.get(key).add(new HashtagInternal(hashtag));
         }
-        q4CacheMap.get(hashtags).trimToSize();
+        q4CacheMap.get(key).trimToSize();
     }
 
     /**
@@ -77,16 +81,18 @@ public class Q4MemStore {
                 // sort the hash tags by the Q4 order rule
                 Collections.sort(hashtagList);
                 addMap(hashtagList);
-            }
-
-            if( lineCount % MILESTONE == 0 ){
-                System.out.println("Load "+lineCount+" lines");
+                if( lineCount % MILESTONE == 0 ){
+                    System.out.println("Load "+lineCount+" lines");
+                }
             }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return false;
         } catch ( IOException e ){
+            e.printStackTrace();
+            return false;
+        } catch ( Exception e ){
             e.printStackTrace();
             return false;
         }
@@ -100,10 +106,18 @@ public class Q4MemStore {
      * @param nStr
      * @return
      */
-    public final static String getQ4Response( String hashtag, String nStr ){
+    public final static String getQ4Response( String hashtag, String nStr ) throws Exception{
         StringBuilder response = new StringBuilder();
-        List<HashtagInternal> hashtags = q4CacheMap.get(hashtag);
+        List<HashtagInternal> hashtags = null;
+        try {
+            hashtags = q4CacheMap.get(hashtag);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+
         if( hashtags == null ){
+            System.out.println("hashtag not found: "+StringEscapeUtils.escapeJava(hashtag));
             return "";
         }
         int count = Integer.valueOf(nStr);

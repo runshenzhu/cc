@@ -3,6 +3,7 @@ package com.obgun.frontend;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.impl.StringEscapeUtils;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -15,7 +16,7 @@ import java.util.concurrent.Executors;
  * Server class
  */
 public class ServerVerticle extends AbstractVerticle {
-  private static int PORT = 8080;
+  private static int PORT = 80;
 
     public ServerVerticle(){
         vertx = io.vertx.core.Vertx.vertx(new VertxOptions().setWorkerPoolSize(200));
@@ -131,11 +132,19 @@ public class ServerVerticle extends AbstractVerticle {
             // Imagine this was a call to a blocking API to get the result
             final String hashtag = routingContext.request().getParam("hashtag");
             final String rank = routingContext.request().getParam("n");
-            final String url = ":80/qq?hashtag="+hashtag+"&n="+rank;
+            // TODO: ugly http request
+            String url = null;
+            try {
+                url = "http://127.0.0.1/qq?hashtag=" + StringEscapeUtils.escapeJava(hashtag) + "&n=" + rank;
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Bad hashtag: " + hashtag);
+            }
             String result = "Omegaga's Black Railgun,6537-0651-1730\n";
             try {
                 result += HttpRequest.sendGet(url);
             } catch (Exception ignore) {
+                ignore.printStackTrace();
                 System.out.println("Q4 bad request: " + hashtag + " " + rank);
             }
             future.complete(result);
@@ -148,14 +157,15 @@ public class ServerVerticle extends AbstractVerticle {
         });
     }
 
-    final private void handleQQ(RoutingContext routingContext){
+    final static private void handleQQ(RoutingContext routingContext){
         final String hashtag = routingContext.request().getParam("hashtag");
         final String rank = routingContext.request().getParam("n");
-        String result = "Omegaga's Black Railgun,6537-0651-1730\n";
+        String result = "";
         try {
-            result += Q4MemStore.getQ4Response(hashtag, rank);
+            result += Q4MemStore.getQ4Response(StringEscapeUtils.unescapeJava(hashtag), rank);
         } catch (Exception ignore) {
-            System.out.println("Q4 bad request: " + hashtag + " " + rank);
+            ignore.printStackTrace();
+            System.out.println("QQ bad request: " + hashtag + " " + rank);
         }
         routingContext.response().putHeader("content-type", "text/plain").end(result);
     }
@@ -172,7 +182,8 @@ public class ServerVerticle extends AbstractVerticle {
     //router.get("/q2").handler(ServerVerticle::handleQ2ThreadPool);
       router.get("/q2").handler(this::handleQ2HBase);
       router.get("/q3").handler(this::handleQ3HBase);
-      router.get("/q4").handler(this::handleQ4HBase);
+      router.get("/q4").handler(this::handleQ4InMM);
+      router.get("/qq").handler(ServerVerticle::handleQQ);
       router.get("/heartbeat").handler(ServerVerticle::handleHeartBeat);
     vertx.createHttpServer()
         .requestHandler(router::accept)
