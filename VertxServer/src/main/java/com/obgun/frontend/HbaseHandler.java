@@ -30,7 +30,7 @@ final public class HbaseHandler {
     // TODO: set the sheet name here !!!!!
     //private static final String TABLE = "twitter";
     private static final String TABLE = "tweet";
-    private static final String TABLEQ4 = "hashtag";
+    private static final String TABLEQ4 = "hashegg";
     private static final byte[] FAMILY = Bytes.toBytes("o");
 
     private static String hbaseUrl;
@@ -261,8 +261,8 @@ final public class HbaseHandler {
         return res;
     }
 
-
-
+/*
+    //scan
     final static String getHbaseAnswerQ4(String tag, String rank){
         int start = 0;
         int end = Integer.parseInt(rank);
@@ -301,6 +301,35 @@ final public class HbaseHandler {
                 }
             }catch (Exception e){}
 
+            return ret;
+        }
+    }
+*/
+    // get
+    final static String getHbaseAnswerQ4(String tag, String rank){
+        byte[] rowkey = Bytes.add(Bytes.toBytes(tag.hashCode()), Bytes.toBytes(tag));
+        Get get = new Get(rowkey);
+        int end = Integer.parseInt(rank);
+        for(int i = 0; i < end; i++){
+            get.addColumn(FAMILY, Bytes.toBytes(i));
+        }
+
+        HTableInterface table = null;
+        String ret = "";
+        try{
+            table = hConnection.getTable(TABLEQ4);
+
+            Result rr = table.get(get);
+            for(int i = 0; i < end; i++){
+                ret += rr.getValue(FAMILY, Bytes.toBytes(i));
+            }
+        }catch (Exception e){}
+        finally {
+            try{
+                if (table != null){
+                    table.close();
+                }
+            }catch (Exception e){}
             return ret;
         }
     }
