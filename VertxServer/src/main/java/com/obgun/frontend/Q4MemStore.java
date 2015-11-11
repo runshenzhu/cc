@@ -37,7 +37,7 @@ public class Q4MemStore {
 
         for( HashtagStructure hashtag : hashtags ){
             hashtag.userList.trimToSize();
-            q4CacheMap.get(hashtag).add(new HashtagInternal(hashtag));
+            q4CacheMap.get(hashtag.hashtag).add(new HashtagInternal(hashtag));
         }
         q4CacheMap.get(hashtags).trimToSize();
     }
