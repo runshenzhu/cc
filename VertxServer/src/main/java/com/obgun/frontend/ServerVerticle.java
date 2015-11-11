@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  * Server class
  */
 public class ServerVerticle extends AbstractVerticle {
-  private static int PORT = 80;
+  private static int PORT = 8080;
 
     public ServerVerticle(){
         vertx = io.vertx.core.Vertx.vertx(new VertxOptions().setWorkerPoolSize(200));
@@ -123,6 +123,7 @@ public class ServerVerticle extends AbstractVerticle {
         });
     }
 
+
     final private void handleQ4InMM(RoutingContext routingContext){
         vertx.<String>executeBlocking(future -> {
             // Do the blocking operation in here
@@ -147,12 +148,24 @@ public class ServerVerticle extends AbstractVerticle {
         });
     }
 
+    final private void handleQQ(RoutingContext routingContext){
+        final String hashtag = routingContext.request().getParam("hashtag");
+        final String rank = routingContext.request().getParam("n");
+        String result = "Omegaga's Black Railgun,6537-0651-1730\n";
+        try {
+            result += Q4MemStore.getQ4Response(hashtag, rank);
+        } catch (Exception ignore) {
+            System.out.println("Q4 bad request: " + hashtag + " " + rank);
+        }
+        routingContext.response().putHeader("content-type", "text/plain").end(result);
+    }
+
   @Override
   final public void start() throws Exception {
     // JDBCClient client = JDBCClient.createShared(vertx, config);
       System.out.println(context.config());
       final String team = "ec2-54-152-34-253.compute-1.amazonaws.com";
-    HbaseHandler.setHbase(team);
+    //HbaseHandler.setHbase(team);
     final Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     router.get("/q1").handler(ServerVerticle::handleQ1);
