@@ -19,13 +19,13 @@ import java.util.*;
 final public class HbaseHandler {
     // Column name
     // TODO: change table, colo and family name
+    /*
     static final private byte[] TEXT = Bytes.toBytes("text");
     static final private byte[] SCORE = Bytes.toBytes("sentiment");
+    */
     static final private byte[] Q4C = Bytes.toBytes("v");
-    /*
     private static final byte[] TEXT = Bytes.toBytes("t");
     private static final byte[] SCORE = Bytes.toBytes("s");
-    */
     private static final byte[] IMPACT = Bytes.toBytes("i");
     // TODO: set the sheet name here !!!!!
     //private static final String TABLE = "twitter";
@@ -133,11 +133,9 @@ final public class HbaseHandler {
         }
 
         int hashCode = (userId).hashCode();
-        byte [] startRow = Bytes.add(Bytes.toBytes(hashCode),
-                Bytes.toBytes(Long.parseLong(userId)),
+        byte [] startRow = Bytes.add(Bytes.toBytes(Long.parseLong(userId)),
                 Bytes.toBytes(startSkew));
-        byte [] endRow = Bytes.add(Bytes.toBytes(hashCode),
-                Bytes.toBytes(Long.parseLong(userId)),
+        byte [] endRow = Bytes.add(Bytes.toBytes(Long.parseLong(userId)),
                 Bytes.toBytes(endSkew));
         // Score filter
         SingleColumnValueFilter impactFilter = new SingleColumnValueFilter(
@@ -145,7 +143,7 @@ final public class HbaseHandler {
 
         Scan scan = new Scan(startRow, endRow);
         scan.setFilter(impactFilter);
-        scan.setMaxVersions(100);
+        scan.setMaxVersions(3);
         scan.addColumn(FAMILY, IMPACT);
         scan.addColumn(FAMILY, TEXT);
         scan.setCacheBlocks(true);
@@ -221,12 +219,13 @@ final public class HbaseHandler {
 
         int skewedTimestamp = TweetProcessor.skewTimeStamp(timestamp);
         int hashCode = (userId).hashCode();
-/*
-        byte [] row = Bytes.add( Bytes.toBytes(hashCode),
-                Bytes.toBytes(Long.parseLong(userId)),
-                Bytes.toBytes(skewedTimestamp));*/
+
+        byte [] row = Bytes.add(Bytes.toBytes(Long.parseLong(userId)),
+                Bytes.toBytes(skewedTimestamp));
+        /*
         byte[] row = Bytes.add(Bytes.toBytes(Long.parseLong(userId)),
                 Bytes.toBytes(timestamp));
+                */
         String res = "";
 
 
@@ -237,7 +236,7 @@ final public class HbaseHandler {
             //Create the CSVFormat object with the header mapping
             //table = new HTable(hbaseConfig, TABLE);
             table = hConnection.getTable(TABLE);
-            get.setMaxVersions(100);
+            get.setMaxVersions(3);
             Result r = table.get(get);
             List<KeyValue> texts = r.getColumn(FAMILY, TEXT);
             List<KeyValue> score = r.getColumn(FAMILY, SCORE);
@@ -261,6 +260,8 @@ final public class HbaseHandler {
         }
         return res;
     }
+
+
 
     final static String getHbaseAnswerQ4(String tag, String rank){
         int start = 0;
