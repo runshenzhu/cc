@@ -11,6 +11,6 @@ CREATE TABLE tweets (
   sentiment int,
   impact int,
   text varchar(640) character set utf8mb4
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE = MYISAM
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB
 PARTITION BY HASH(user_id)
-PARTITIONS 100;
+PARTITIONS 20;

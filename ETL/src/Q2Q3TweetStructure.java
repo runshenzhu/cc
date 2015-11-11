@@ -47,7 +47,7 @@ public class Q2Q3TweetStructure {
     public String toEscapeString() {
         return id + "," + userId + "," + skewedTimestamp + "," +
                 sentimentScore + "," + impactScore + "," +
-                "\"" + StringEscapeUtils.escapeCsv(censoredText) + "\"";
+                 StringEscapeUtils.escapeCsv(censoredText);
     }
 
 

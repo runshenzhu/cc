@@ -39,7 +39,7 @@ public class HBasePutQ4 {
         for( int i = 1; i < hashtag.userList.size(); ++i  ){
             Q4Response.append(",").append(hashtag.userList.get(i));
         }
-        Q4Response.append(":").append(hashtag.sourceText);
+        Q4Response.append(":").append(hashtag.sourceText).append("\n");
 
         put.add(FAMILY, VALUE, Bytes.toBytes(Q4Response.toString()));
         return put;
