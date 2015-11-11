@@ -14,8 +14,9 @@ import java.util.*;
  */
 public class Q4MemStore {
     private static final long MILESTONE = 100000;
+    private static final int INITCAP = 20000000;
 
-    private static Map<String, ArrayList<HashtagInternal>> q4CacheMap = new TreeMap<>();
+    private static Map<String, ArrayList<HashtagInternal>> q4CacheMap = new HashMap<String, ArrayList<HashtagInternal>>(INITCAP);
 
     private static class HashtagInternal {
         public int skewedTimestamp;
