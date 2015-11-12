@@ -37,6 +37,7 @@ final public class HbaseHandler {
     private static Client client;
     private static Configuration hbaseConfig;
     private static HConnection hConnection;
+    private static HConnection hConnectionQ4;
 //    private static final DateFormat dateTimeformat = setDateTimeFormat();
 //    private static final DateFormat dateFormat = setDateFormat();
 //
@@ -89,6 +90,7 @@ final public class HbaseHandler {
         try {
             HBaseAdmin.checkHBaseAvailable(hbaseConfig);
             hConnection = HConnectionManager.createConnection(hbaseConfig /*, Executors.newFixedThreadPool(200)*/);
+            hConnectionQ4 = HConnectionManager.createConnection(hbaseConfig);
         } catch (MasterNotRunningException e) {
             e.printStackTrace();
             return false;
@@ -317,11 +319,11 @@ final public class HbaseHandler {
         HTableInterface table = null;
         String ret = "";
         try{
-            table = hConnection.getTable(TABLEQ4);
+            table = hConnectionQ4.getTable(TABLEQ4);
 
             Result rr = table.get(get);
             for(int i = 0; i < end; i++){
-                ret += rr.getValue(FAMILY, Bytes.toBytes(i));
+                ret += Bytes.toString(rr.getValue(FAMILY, Bytes.toBytes(i)));
             }
         }catch (Exception e){}
         finally {
