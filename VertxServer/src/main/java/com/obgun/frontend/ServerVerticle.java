@@ -50,6 +50,7 @@ public class ServerVerticle extends AbstractVerticle {
           String timeStamp = routingContext.request().getParam("tweet_time");
           String result = "Omegaga's Black Railgun,6537-0651-1730\n";
           try {
+
               result += HbaseHandler.getHbaseAnswerQ2(userid, timeStamp);
           } catch (Exception ignore) {
               System.out.println("Q2 bad request: " + userid + " " + timeStamp);
@@ -184,15 +185,13 @@ public class ServerVerticle extends AbstractVerticle {
     // JDBCClient client = JDBCClient.createShared(vertx, config);
       System.out.println(context.config());
       final String team = "ec2-54-152-34-253.compute-1.amazonaws.com";
-    //HbaseHandler.setHbase(team);
+    HbaseHandler.setHbase(team);
     final Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     router.get("/q1").handler(ServerVerticle::handleQ1);
-    //router.get("/q2").handler(ServerVerticle::handleQ2ThreadPool);
       router.get("/q2").handler(this::handleQ2HBase);
       router.get("/q3").handler(this::handleQ3HBase);
-      router.get("/q4").handler(this::handleQ4InMM);
-      router.get("/qq").handler(ServerVerticle::handleQQ);
+      router.get("/q4").handler(this::handleQ4HBase);
       router.get("/heartbeat").handler(ServerVerticle::handleHeartBeat);
     vertx.createHttpServer()
         .requestHandler(router::accept)

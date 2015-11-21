@@ -11,10 +11,7 @@ public class Main{
             System.out.println("java for <inputQ4file>");
         }
 
-        if( !Q4MemStore.initCache(args[0]) ){
-            System.out.println("Load Q4 Mem failed");
-            System.exit(1);
-        }
+       
 
         final VertxOptions options = new VertxOptions().setWorkerPoolSize(128);
         final Vertx vertx = Vertx.vertx(options);

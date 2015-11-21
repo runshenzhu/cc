@@ -30,13 +30,14 @@ final public class HbaseHandler {
     // TODO: set the sheet name here !!!!!
     //private static final String TABLE = "twitter";
     private static final String TABLE = "tweet";
-    private static final String TABLEQ4 = "hashtag";
+    private static final String TABLEQ4 = "hashegg";
     private static final byte[] FAMILY = Bytes.toBytes("o");
 
     private static String hbaseUrl;
     private static Client client;
     private static Configuration hbaseConfig;
     private static HConnection hConnection;
+    private static HConnection hConnectionQ4;
 //    private static final DateFormat dateTimeformat = setDateTimeFormat();
 //    private static final DateFormat dateFormat = setDateFormat();
 //
@@ -89,6 +90,7 @@ final public class HbaseHandler {
         try {
             HBaseAdmin.checkHBaseAvailable(hbaseConfig);
             hConnection = HConnectionManager.createConnection(hbaseConfig /*, Executors.newFixedThreadPool(200)*/);
+            hConnectionQ4 = HConnectionManager.createConnection(hbaseConfig);
         } catch (MasterNotRunningException e) {
             e.printStackTrace();
             return false;
@@ -261,8 +263,8 @@ final public class HbaseHandler {
         return res;
     }
 
-
-
+/*
+    //scan
     final static String getHbaseAnswerQ4(String tag, String rank){
         int start = 0;
         int end = Integer.parseInt(rank);
@@ -301,6 +303,35 @@ final public class HbaseHandler {
                 }
             }catch (Exception e){}
 
+            return ret;
+        }
+    }
+*/
+    // get
+    final static String getHbaseAnswerQ4(String tag, String rank){
+        byte[] rowkey = Bytes.add(Bytes.toBytes(tag.hashCode()), Bytes.toBytes(tag));
+        Get get = new Get(rowkey);
+        int end = Integer.parseInt(rank);
+        for(int i = 0; i < end; i++){
+            get.addColumn(FAMILY, Bytes.toBytes(i));
+        }
+
+        HTableInterface table = null;
+        String ret = "";
+        try{
+            table = hConnectionQ4.getTable(TABLEQ4);
+
+            Result rr = table.get(get);
+            for(int i = 0; i < end; i++){
+                ret += Bytes.toString(rr.getValue(FAMILY, Bytes.toBytes(i)));
+            }
+        }catch (Exception e){}
+        finally {
+            try{
+                if (table != null){
+                    table.close();
+                }
+            }catch (Exception e){}
             return ret;
         }
     }
