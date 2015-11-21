@@ -1,3 +1,4 @@
+import com.sun.xml.internal.ws.client.sei.SEIStub;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.MasterNotRunningException;
@@ -33,16 +34,23 @@ public class HBasePutQ2Q3 {
         //byte [] rowkey = Bytes.add(Bytes.toBytes(hashvalue),
         //        Bytes.toBytes(tweet.userId), Bytes.toBytes(tweet.skewedTimestamp));
 
-        byte [] rowkey = Bytes.add(Bytes.toBytes(tweet.userId), Bytes.toBytes(tweet.skewedTimestamp));
+//        byte [] rowkey = Bytes.add(Bytes.toBytes(tweet.userId), Bytes.toBytes(tweet.skewedTimestamp));
+        byte [] rowkey = Bytes.toBytes(tweet.userId);
         return rowkey;
     }
 
     private static Put createPut(Q2Q3TweetStructure tweet){
         byte [] rowkey = getRowkey(tweet);
-        Put put = new Put(rowkey, tweet.id);
-        put.add(FAMILY, SENTIMENTSCORE, Bytes.toBytes(tweet.sentimentScore));
-        put.add(FAMILY, IMPACTSCORE, Bytes.toBytes(tweet.impactScore));
-        put.add(FAMILY, SENSOREDTEXT, Bytes.toBytes(tweet.censoredText));
+        Put put = new Put(rowkey, (long)tweet.skewedTimestamp);
+
+        byte[] tid = Bytes.toBytes(tweet.id);
+        byte [] tid_sentiment = Bytes.add(tid, SENTIMENTSCORE);
+        byte [] tid_text = Bytes.add(tid, SENSOREDTEXT);
+        byte [] tid_impact = Bytes.add(tid, IMPACTSCORE);
+
+        put.add(FAMILY, tid_sentiment, Bytes.toBytes(tweet.sentimentScore));
+        put.add(FAMILY, tid_impact, Bytes.toBytes(tweet.impactScore));
+        put.add(FAMILY, tid_text, Bytes.toBytes(tweet.censoredText));
         return put;
     }
 
