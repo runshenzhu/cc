@@ -29,7 +29,7 @@ final public class HbaseHandler {
     private static final byte[] IMPACT = Bytes.toBytes("i");
     // TODO: set the sheet name here !!!!!
     //private static final String TABLE = "twitter";
-    private static final String TABLE = "tweet";
+    private static final String TABLE = "tweets";
     private static final String TABLEQ4 = "hashegg";
     private static final byte[] FAMILY = Bytes.toBytes("o");
 
@@ -222,8 +222,7 @@ final public class HbaseHandler {
         int skewedTimestamp = TweetProcessor.skewTimeStamp(timestamp);
         int hashCode = (userId).hashCode();
 
-        byte [] row = Bytes.add(Bytes.toBytes(Long.parseLong(userId)),
-                Bytes.toBytes(skewedTimestamp));
+        byte [] row = Bytes.toBytes(Long.parseLong(userId));
         /*
         byte[] row = Bytes.add(Bytes.toBytes(Long.parseLong(userId)),
                 Bytes.toBytes(timestamp));
@@ -238,15 +237,19 @@ final public class HbaseHandler {
             //Create the CSVFormat object with the header mapping
             //table = new HTable(hbaseConfig, TABLE);
             table = hConnection.getTable(TABLE);
-            get.setMaxVersions(3);
+            //get.setMaxVersions(3);
             Result r = table.get(get);
-            List<KeyValue> texts = r.getColumn(FAMILY, TEXT);
-            List<KeyValue> score = r.getColumn(FAMILY, SCORE);
+
+            List<KeyValue> texts = r.getColumn(FAMILY, Bytes.add(
+                    Bytes.toBytes(skewedTimestamp), TEXT));
+            List<KeyValue> score = r.getColumn(FAMILY, Bytes.add(
+                    Bytes.toBytes(skewedTimestamp), SCORE));
             for(int i = texts.size()-1; i >= 0; i--){
                 res += score.get(i).getTimestamp() + ":";
                 res += Bytes.toInt(score.get(i).getValue())+":";
                 res += Bytes.toString(texts.get(i).getValue())+"\n";
             }
+
         }catch (IOException e){
             e.printStackTrace();
             res = null;

@@ -7,10 +7,11 @@ public class Main{
     public static void main(String[] args) throws Exception {
         //System.setProperty("vertx.disableFileCaching", "true");
         //System.out.println("in main");
+        /*
         if( args.length != 1 ){
             System.out.println("java for <inputQ4file>");
         }
-
+*/
        
 
         final VertxOptions options = new VertxOptions().setWorkerPoolSize(128);
