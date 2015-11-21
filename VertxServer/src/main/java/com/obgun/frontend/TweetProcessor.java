@@ -62,6 +62,15 @@ public class TweetProcessor {
     }
 
     /**
+     * Round a unskewed timestamp (in second offset) to day
+     * @param skewedTimestamp
+     * @return
+     */
+    public static long unskewTimeStamp(long skewedTimestamp) {
+        return skewedTimestamp * 1000L + startTimestamp;
+    }
+
+    /**
      * Extract a local hashtag list from a tweet stucture
      * @param tweet
      * @return

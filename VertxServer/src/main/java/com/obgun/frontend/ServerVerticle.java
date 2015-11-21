@@ -16,7 +16,15 @@ import java.util.concurrent.Executors;
  * Server class
  */
 public class ServerVerticle extends AbstractVerticle {
-  private static int PORT = 80;
+    private static int PORT = 80;
+    private static final String[] SERVERS = {
+            "ec2-54-152-34-253.compute-1.amazonaws.com",
+            "ec2-54-174-128-58.compute-1.amazonaws.com",
+            "ec2-54-172-51-52.compute-1.amazonaws.com",
+            "ec2-54-164-126-14.compute-1.amazonaws.com",
+            "ec2-52-91-220-101.compute-1.amazonaws.com",
+            "ec2-54-88-191-62.compute-1.amazonaws.com"
+    };
 
     public ServerVerticle(){
         vertx = io.vertx.core.Vertx.vertx(new VertxOptions().setWorkerPoolSize(200));
@@ -135,8 +143,9 @@ public class ServerVerticle extends AbstractVerticle {
             final String rank = routingContext.request().getParam("n");
             // TODO: ugly http request
             String url = null;
+            int shardNum = TweetProcessor.shardByStr(6, hashtag);
             try {
-                url = "http://127.0.0.1/qq?hashtag=" + StringEscapeUtils.escapeJava(hashtag) + "&n=" + rank;
+                url = "http://" + SERVERS[shardNum] + "/qq?hashtag=" + StringEscapeUtils.escapeJava(hashtag) + "&n=" + rank;
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Bad hashtag: " + hashtag);
