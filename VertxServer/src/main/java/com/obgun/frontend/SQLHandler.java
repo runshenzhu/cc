@@ -379,4 +379,9 @@ public class SQLHandler {
 
     return answer.toString();
   }
+
+  public static String getSqlAnswerQ6(String tweetId){
+    return "";
+  }
+
 }
