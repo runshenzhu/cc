@@ -44,11 +44,17 @@ public class Q2Q3TweetStructure {
      * Output in a csv format. Multi line....
      * @return
      */
-    public String toEscapeString() {
+    public String toEscapeStringQ2Q3() {
         return id + "," + userId + "," + skewedTimestamp + "," +
                 sentimentScore + "," + impactScore + "," +
                  StringEscapeUtils.escapeCsv(censoredText);
     }
 
-
+    /**
+     * Output in a csv format, for Q5
+     * @return
+     */
+    public String toEscapeStringQ5() {
+        return id + "," + StringEscapeUtils.escapeCsv(censoredText);
+    }
 }

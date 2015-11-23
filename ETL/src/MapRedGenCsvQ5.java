@@ -1,5 +1,3 @@
-import java.io.IOException;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -12,13 +10,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-/**
- * Created by jessesleep on 11/5/15.
- */
-public class MapRedGenCsvQ2Q3 {
+import java.io.IOException;
 
-    public static class ShardMapper
-            extends Mapper<Object, Text, LongWritable, Text>{
+/**
+ * Created by jessesleep on 11/22/15.
+ */
+public class MapRedGenCsvQ5 {
+
+    public static class ShardQ5Mapper
+            extends Mapper<Object, Text, LongWritable, Text> {
 
         @Override
         public void map(Object key, Text value, Context context
@@ -27,22 +27,22 @@ public class MapRedGenCsvQ2Q3 {
 
             Q2Q3TweetStructure tweet = new Q2Q3TweetStructure(value.toString());
 
-            keyOut.set(tweet.userId);
+            keyOut.set(tweet.id);
 
             context.write(keyOut, value);
         }
     }
 
-    public static class UidShardPartitioner extends Partitioner<LongWritable, Text> {
+    public static class TidShardPartitioner extends Partitioner<LongWritable, Text> {
 
         @Override
         public int getPartition(LongWritable key, Text value, int numReduceTasks){
-            long userId = key.get();
-            return TweetProcessor.shardByLongId(numReduceTasks, userId);
+            long tweet_id = key.get();
+            return TweetProcessor.shardByLongId(numReduceTasks, tweet_id);
         }
     }
 
-    public static class CsvTransformReducer
+    public static class CsvTransformQ5Reducer
             extends Reducer<LongWritable,Text, NullWritable, Text> {
 
         @Override
@@ -52,7 +52,7 @@ public class MapRedGenCsvQ2Q3 {
             for ( Text value : values ) {
                 Text valueOut = new Text();
                 Q2Q3TweetStructure tweet = new Q2Q3TweetStructure(value.toString());
-                valueOut.set(tweet.toEscapeStringQ2Q3());
+                valueOut.set(tweet.toEscapeStringQ5());
                 context.write(NullWritable.get(), valueOut);
             }
         }
@@ -61,16 +61,16 @@ public class MapRedGenCsvQ2Q3 {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         if (args.length != 3) {
-            System.err.println("Usage: MapRedGenCsvQ2Q3 <in> <out> <shardCount>");
+            System.err.println("Usage: MapRedGenCsvQ5 <Q2Q3_prepare_in> <Q5_csv_out> <shardCount>");
             System.exit(1);
         }
 
-        Job job = Job.getInstance(conf, "CsvQ2Q3");
+        Job job = Job.getInstance(conf, "CsvQ5");
 
-        job.setPartitionerClass(UidShardPartitioner.class);
-        job.setJarByClass(MapRedGenCsvQ2Q3.class);
-        job.setMapperClass(ShardMapper.class);
-        job.setReducerClass(CsvTransformReducer.class);
+        job.setPartitionerClass(TidShardPartitioner.class);
+        job.setJarByClass(MapRedGenCsvQ5.class);
+        job.setMapperClass(ShardQ5Mapper.class);
+        job.setReducerClass(CsvTransformQ5Reducer.class);
 
         job.setMapOutputKeyClass(LongWritable.class);
         job.setMapOutputValueClass(Text.class);
