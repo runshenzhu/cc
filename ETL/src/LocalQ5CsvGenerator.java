@@ -43,7 +43,8 @@ public class LocalQ5CsvGenerator {
             String userIdStr = line.substring(0, index);
             totalCount += Long.valueOf(line.substring(index+1));
 
-            fileOuts.get(shardStr(shards, userIdStr)).write(userIdStr+","+totalCount);
+            int shardSelected = shardStr(shards, userIdStr);
+            fileOuts.get(shardSelected).write(userIdStr+","+totalCount+"\n");
         }
 
         for( int i = 0; i < shards; ++i ){
