@@ -67,7 +67,7 @@ public class MapRedGenInfoQ2Q3 {
         @Override
         public int getPartition(LongWritable key, Text value, int numReduceTasks){
             long userId = key.get();
-            return TweetProcessor.shardByUserId(numReduceTasks, userId);
+            return TweetProcessor.shardByLongId(numReduceTasks, userId);
         }
     }
 

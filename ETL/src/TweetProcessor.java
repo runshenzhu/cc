@@ -150,7 +150,7 @@ public class TweetProcessor {
      * Calculate the shard of tweets
      * @return
      */
-    public static int shardByUserId( int shardCount, long userId ){
+    public static int shardByLongId(int shardCount, long userId ){
         return shardByStr(shardCount, String.valueOf(userId));
     }
 
