@@ -51,7 +51,7 @@ public class MapRedTweetCount {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         if (args.length != 2) {
-            System.err.println("Usage: MapRedTweetCount <Q2Q3_prepare_in> <Q6_uid_count_out>");
+            System.err.println("Usage: MapRedTweetCount <Q2Q3_prepare_in> <Q5_uid_count_out>");
             System.exit(1);
         }
 
