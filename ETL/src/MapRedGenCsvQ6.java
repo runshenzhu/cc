@@ -15,7 +15,7 @@ import java.io.IOException;
 /**
  * Created by jessesleep on 11/22/15.
  */
-public class MapRedGenCsvQ5 {
+public class MapRedGenCsvQ6 {
 
     public static class ShardQ5Mapper
             extends Mapper<Object, Text, LongWritable, Text> {
@@ -61,14 +61,14 @@ public class MapRedGenCsvQ5 {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         if (args.length != 3) {
-            System.err.println("Usage: MapRedGenCsvQ5 <Q2Q3_prepare_in> <Q5_csv_out> <shardCount>");
+            System.err.println("Usage: MapRedGenCsvQ6 <Q2Q3_prepare_in> <Q5_csv_out> <shardCount>");
             System.exit(1);
         }
 
         Job job = Job.getInstance(conf, "CsvQ5");
 
         job.setPartitionerClass(TidShardPartitioner.class);
-        job.setJarByClass(MapRedGenCsvQ5.class);
+        job.setJarByClass(MapRedGenCsvQ6.class);
         job.setMapperClass(ShardQ5Mapper.class);
         job.setReducerClass(CsvTransformQ5Reducer.class);
 
