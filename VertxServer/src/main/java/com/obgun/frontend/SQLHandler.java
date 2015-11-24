@@ -21,39 +21,57 @@ public class SQLHandler {
   private static final Date startDate = startDateSetter();
 
   private static ComboPooledDataSource[] cpds;
+  // TODO: only for local testing!!! REMOVE this when deploying!!!
+  private static ComboPooledDataSource localCpds;
   private static final int SHARDING_COUNT = 8;
 
+  private static boolean setDataSource(ComboPooledDataSource cpds,
+                                       String url,
+                                       String user,
+                                       String passwd) {
+    SQLHandler.mySqlUrl = url;
+    SQLHandler.mySqlUser = user;
+    SQLHandler.mySqlPasswd = passwd;
+
+    try {
+      cpds.setDriverClass("com.mysql.jdbc.Driver");
+      cpds.setJdbcUrl("jdbc:mysql://" + mySqlUrl +
+          "/twitter?useUnicode=true&characterEncoding=UTF-8");
+      cpds.setUser(mySqlUser);
+      cpds.setPassword(mySqlPasswd);
+
+      cpds.setInitialPoolSize(100);
+      cpds.setMinPoolSize(100);
+      cpds.setAcquireIncrement(5);
+      cpds.setMaxPoolSize(100);
+    } catch (PropertyVetoException e) {
+      System.out.println(e);
+      e.printStackTrace();
+      return false;
+    }
+    return true;
+  }
   /**
    * Set up the mySql client
    * @param urls
    * @param user
    * @param passwd
    */
-  protected static boolean setMySql(String[] urls, String user, String passwd) throws SQLException {
+  protected static boolean setMySql(String[] urls, String user, String passwd)
+      throws SQLException {
+    localCpds = new ComboPooledDataSource();
+    if (!setDataSource(localCpds, "localhost", user, passwd))
+      return false;
+
+    // TODO: uncomment this when deploying!!!!
+    /*
     cpds = new ComboPooledDataSource[SHARDING_COUNT];
     for (int i = 0; i < SHARDING_COUNT; ++i) {
-      SQLHandler.mySqlUrl = urls[i];
-      SQLHandler.mySqlUser = user;
-      SQLHandler.mySqlPasswd = passwd;
-
       cpds[i] = new ComboPooledDataSource();
-      try {
-        cpds[i].setDriverClass("com.mysql.jdbc.Driver");
-        cpds[i].setJdbcUrl("jdbc:mysql://" + mySqlUrl +
-            "/twitter?useUnicode=true&characterEncoding=UTF-8");
-        cpds[i].setUser(mySqlUser);
-        cpds[i].setPassword(mySqlPasswd);
-
-        cpds[i].setInitialPoolSize(100);
-        cpds[i].setMinPoolSize(100);
-        cpds[i].setAcquireIncrement(5);
-        cpds[i].setMaxPoolSize(100);
-      } catch (PropertyVetoException e) {
-        System.out.println(e);
-        e.printStackTrace();
+      if (!setDataSource(cpds[i], urls[i], user, passwd))
         return false;
-      }
     }
+    */
 
     return true;
   }
@@ -379,9 +397,143 @@ public class SQLHandler {
 
     return answer.toString();
   }
+  public static String getSqlAnswerQ5(long startUid, long endUid) {
+    final DateFormat outputDateFormat =
+        new SimpleDateFormat("yyyy-MM-dd");
+    outputDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+    Connection conn = null;
+    // Check whether the requested timestamp is valid or not
+    final StringBuilder answer = new StringBuilder();
+    PreparedStatement q5MinStatement = null;
+    PreparedStatement q5MaxStatement = null;
+    ResultSet rsMin = null;
+    ResultSet rsMax = null;
 
-  public static String getSqlAnswerQ6(long tweetId){
-    return "";
+    // Request a new connection for every request
+    try {
+      long startCount = 0;
+      long endCount = 0;
+      conn = localCpds.getConnection();
+
+      //System.out.println("Connect to SQL");
+
+      // May cause problem
+      conn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+
+      q5MinStatement = conn.prepareStatement(
+          "SELECT t_count FROM tweet_count WHERE u_id < ? ORDER BY u_id DESC LIMIT 1"
+      );
+
+      q5MinStatement.setLong(1, startUid);
+      rsMin = q5MinStatement.executeQuery();
+      if (rsMin.next()) {
+        startCount = rsMin.getInt("t_count");
+      }
+
+      q5MaxStatement = conn.prepareStatement(
+          "SELECT t_count FROM tweet_count WHERE u_id <= ? ORDER BY u_id DESC LIMIT 1"
+      );
+
+      q5MaxStatement.setLong(1, endUid);
+
+      rsMax = q5MaxStatement.executeQuery();
+      if (rsMax.next()) {
+        endCount = rsMax.getInt("t_count");
+      }
+
+      long ans = endCount - startCount;
+
+      // Parse the result set
+      answer.append("Omegaga's Black Railgun,6537-0651-1730\n");
+      answer.append(ans);
+      answer.append("\n");
+    } catch (SQLException ex) {
+      System.out.println("SQLException: " + ex.getMessage());
+      System.out.println("SQLState: " + ex.getSQLState());
+      System.out.println("VendorError: " + ex.getErrorCode());
+    } finally {
+      if( rsMin != null ) {
+        try {
+          rsMin.close();
+        } catch (SQLException e) {} // ignore
+      }
+      if( rsMax != null ) {
+        try {
+          rsMax.close();
+        } catch (SQLException e) {} // ignore
+      }
+      if( q5MinStatement != null ){
+        try{
+          q5MinStatement.close();
+        } catch( SQLException e) {} // ignore
+      }
+      if( q5MaxStatement != null ){
+        try{
+          q5MaxStatement.close();
+        } catch( SQLException e) {} // ignore
+      }
+
+      if( conn != null ){
+        try {
+          conn.close();
+        } catch (SQLException e) {} // ignore
+      }
+    }
+
+    return answer.toString();
   }
 
+  public static String getSqlAnswerInternalQ6(long tweetId) {
+    String answer = "";
+    Connection conn = null;
+    // Check whether the requested timestamp is valid or not
+    ResultSet rs = null;
+    PreparedStatement q6Statement = null;
+
+    // Request a new connection for every request
+    try {
+      conn = localCpds.getConnection();
+
+      //System.out.println("Connect to SQL");
+
+      // May cause problem
+      conn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+
+      q6Statement = conn.prepareStatement(
+          "SELECT text FROM tweets_q6 WHERE id = ?"
+      );
+
+      q6Statement.setLong(1, tweetId);
+      rs = q6Statement.executeQuery();
+
+      // Parse the result set
+      if (rs.next()) {
+        answer = rs.getString("text");
+
+      }
+    } catch (SQLException ex) {
+      System.out.println("SQLException: " + ex.getMessage());
+      System.out.println("SQLState: " + ex.getSQLState());
+      System.out.println("VendorError: " + ex.getErrorCode());
+    } finally {
+      if( rs != null ) {
+        try {
+          rs.close();
+        } catch (SQLException e) {} // ignore
+      }
+      if( q6Statement != null ){
+        try{
+          q6Statement.close();
+        } catch( SQLException e) {} // ignore
+      }
+
+      if( conn != null ){
+        try {
+          conn.close();
+        } catch (SQLException e) {} // ignore
+      }
+    }
+
+    return answer;
+  }
 }
