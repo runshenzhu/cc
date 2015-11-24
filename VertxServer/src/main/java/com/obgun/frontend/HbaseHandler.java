@@ -232,6 +232,10 @@ final public class HbaseHandler {
 
         // not hit
         Get get = new Get(row);
+        get.addColumn(FAMILY, Bytes.add(
+                Bytes.toBytes(skewedTimestamp), TEXT));
+        get.addColumn(FAMILY, Bytes.add(
+                Bytes.toBytes(skewedTimestamp), SCORE));
         HTableInterface table = null;
         try {
             //Create the CSVFormat object with the header mapping

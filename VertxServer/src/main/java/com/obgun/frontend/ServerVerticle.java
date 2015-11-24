@@ -7,6 +7,9 @@ import io.vertx.core.impl.StringEscapeUtils;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import org.jruby.RubyProcess;
+
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,10 +28,11 @@ public class ServerVerticle extends AbstractVerticle {
             "ec2-52-91-220-101.compute-1.amazonaws.com",
             "ec2-54-88-191-62.compute-1.amazonaws.com"
     };
-
+/*
     public ServerVerticle(){
         vertx = io.vertx.core.Vertx.vertx(new VertxOptions().setWorkerPoolSize(200));
     }
+    */
     final static ExecutorService threadPool = Executors.newFixedThreadPool(200);
   final private static void handleQ1(RoutingContext routingContext) {
     routingContext.response().end(
@@ -134,64 +138,74 @@ public class ServerVerticle extends AbstractVerticle {
     }
 
 
-    final private void handleQ4InMM(RoutingContext routingContext){
-        vertx.<String>executeBlocking(future -> {
-            // Do the blocking operation in here
 
-            // Imagine this was a call to a blocking API to get the result
-            final String hashtag = routingContext.request().getParam("hashtag");
-            final String rank = routingContext.request().getParam("n");
-            // TODO: ugly http request
-            String url = null;
-            int shardNum = TweetProcessor.shardByStr(6, hashtag);
-            try {
-                url = "http://" + SERVERS[shardNum] + "/qq?hashtag=" + StringEscapeUtils.escapeJava(hashtag) + "&n=" + rank;
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Bad hashtag: " + hashtag);
+    final ConcurrentHashMap<Long, TransactionUnit> q6Map = new ConcurrentHashMap<>();
+    final private void handleQ6(RoutingContext routingContext){
+        //q6?tid=3000001&opt=s
+        //q6?tid=3000001&seq=1&opt=a&tweetid=458875845231521792&tag=ILOVE15619!12
+        //q6?tid=3000001&seq=5&opt=r&tweetid=448988310417850370
+        //q6?tid=3000001&opt=e
+        final String result = "Omegaga's Black Railgun,6537-0651-1730\n";
+        long tid = Long.parseLong(routingContext.request().getParam("tid"));
+        char opt = routingContext.request().getParam("opt").charAt(0);
+        switch (opt){
+            case 's': {
+                routingContext.response().putHeader("content-type", "text/plain").end(result + "0\n");
+                q6Map.put(tid, new TransactionUnit(tid));
+                break;
             }
-            String result = "Omegaga's Black Railgun,6537-0651-1730\n";
-            try {
-                result += HttpRequest.sendGet(url);
-            } catch (Exception ignore) {
-                ignore.printStackTrace();
-                System.out.println("Q4 bad request: " + hashtag + " " + rank);
+            case 'a': {
+                String tag = routingContext.request().getParam("tag");
+                String sId = routingContext.request().getParam("seq");
+                String tweetId = routingContext.request().getParam("tweetid");
+                q6Map.get(tid).write(sId, tweetId, tag);
+                routingContext.response().putHeader("content-type", "text/plain").end(result + tag + "\n");
+                break;
             }
-            future.complete(result);
-        }, false, res -> {
-            if (res.succeeded()) {
-                routingContext.response().putHeader("content-type", "text/plain").end(res.result());
-            } else {
-                res.cause().printStackTrace();
-            }
-        });
-    }
+            case 'r':
+                vertx.<String>executeBlocking(future -> {
+                    String sId = routingContext.request().getParam("seq");
+                    String tweetId = routingContext.request().getParam("tweetid");
 
-    final static private void handleQQ(RoutingContext routingContext){
-        final String hashtag = routingContext.request().getParam("hashtag");
-        final String rank = routingContext.request().getParam("n");
-        String result = "";
-        try {
-            result += Q4MemStore.getQ4Response(StringEscapeUtils.unescapeJava(hashtag), rank);
-        } catch (Exception ignore) {
-            ignore.printStackTrace();
-            System.out.println("QQ bad request: " + hashtag + " " + rank);
+                    String text = q6Map.get(tid).read(sId, tweetId);
+                    future.complete(result+text);
+                }, false, res -> {
+                    if (res.succeeded()) {
+                        routingContext.response().putHeader("content-type", "text/plain").end(res.result());
+                    } else {
+                        res.cause().printStackTrace();
+                    }
+                }); break;
+            case 'e':
+                routingContext.response().putHeader("content-type", "text/plain").end(result+"0\n");
+                vertx.<String>executeBlocking(future -> {
+                    q6Map.get(tid).endChecker();
+                    future.complete(result + "0");
+                }, false, res -> {
+                    if (res.succeeded()) {
+                        q6Map.remove(tid);
+                    } else {
+                        res.cause().printStackTrace();
+                    }
+                }); break;
+            default: System.out.println(routingContext.request());break;
         }
-        routingContext.response().putHeader("content-type", "text/plain").end(result);
     }
 
   @Override
   final public void start() throws Exception {
     // JDBCClient client = JDBCClient.createShared(vertx, config);
       System.out.println(context.config());
-      final String team = "ec2-54-152-34-253.compute-1.amazonaws.com";
+      final String team = "ec2-52-91-160-6.compute-1.amazonaws.com";
     HbaseHandler.setHbase(team);
     final Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     router.get("/q1").handler(ServerVerticle::handleQ1);
       router.get("/q2").handler(this::handleQ2HBase);
+      //router.get("/q2").handler(ServerVerticle::handleQ2ThreadPool);
       router.get("/q3").handler(this::handleQ3HBase);
       router.get("/q4").handler(this::handleQ4HBase);
+      router.get("/q6").handler(this::handleQ6);
       router.get("/heartbeat").handler(ServerVerticle::handleHeartBeat);
     vertx.createHttpServer()
         .requestHandler(router::accept)
