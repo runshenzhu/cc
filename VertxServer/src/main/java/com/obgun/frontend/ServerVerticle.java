@@ -1,6 +1,10 @@
 package com.obgun.frontend;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -18,14 +22,17 @@ import java.util.concurrent.Executors;
 public class ServerVerticle extends AbstractVerticle {
     private static int PORT = 80;
     private static final String[] SERVERS = {
-            "ec2-54-152-34-253.compute-1.amazonaws.com",
-            "ec2-54-174-128-58.compute-1.amazonaws.com",
-            "ec2-54-172-51-52.compute-1.amazonaws.com",
-            "ec2-54-164-126-14.compute-1.amazonaws.com",
-            "ec2-52-91-220-101.compute-1.amazonaws.com",
-            "ec2-54-88-191-62.compute-1.amazonaws.com"
+            "ec2-54-164-90-236.compute-1.amazonaws.com",
+            "ec2-54-164-117-52.compute-1.amazonaws.com",
+            "ec2-54-88-27-246.compute-1.amazonaws.com",
+            "ec2-54-85-161-121.compute-1.amazonaws.com",
+            "ec2-52-91-215-110.compute-1.amazonaws.com",
+            "ec2-54-164-154-79.compute-1.amazonaws.com",
+            "ec2-54-164-157-219.compute-1.amazonaws.com",
+            "ec2-54-152-100-110.compute-1.amazonaws.com"
     };
 
+    static HttpClient httpClient;
 
   final private static void handleQ1(RoutingContext routingContext) {
     routingContext.response().end(
@@ -140,8 +147,76 @@ public class ServerVerticle extends AbstractVerticle {
     });
   }
 
-    final ConcurrentHashMap<Long, TransactionUnit> q6Map = new ConcurrentHashMap<>();
     final private void handleQ6(RoutingContext routingContext){
+        final String result = "Omegaga's Black Railgun,6537-0651-1730\n";
+        Long tid = Long.parseLong(routingContext.request().getParam("tid"));
+        char opt = routingContext.request().getParam("opt").charAt(0);
+        String url = SERVERS[Math.abs(tid.hashCode()) % SERVERS.length];
+        //String url = "localhost";
+        switch (opt){
+            case 's': { // trans start
+                routingContext.response().putHeader("content-type", "text/plain").end(result + "0\n");
+                //q6?tid=3000001&opt=s
+                //httpClient.get(PORT, SERVERS[Math.abs(tid.hashCode()) % SERVERS.length], "/q6i?tid=" + tid + "&opt=s");
+                httpClient.getNow(PORT, url, "/q6i?tid=" + tid + "&opt=s", response ->{});
+                break;
+
+            }
+            case 'a': {
+
+                //q6?tid=3000001&seq=1&opt=a&tweetid=458875845231521792&tag=ILOVE15619!12
+                String tag = routingContext.request().getParam("tag");
+                String sId = routingContext.request().getParam("seq");
+                String tweetId = routingContext.request().getParam("tweetid");
+                routingContext.response().putHeader("content-type", "text/plain").end(result + tag + "\n");
+                httpClient.getNow(PORT, url,
+                        "/q6i?tid=" + tid +
+                                "&opt=a" +
+                                "&seq=" + sId +
+                                "&tweetid=" + tweetId +
+                                "&tag=" + tag, response -> {});
+                break;
+
+            }
+            case 'r':
+
+                vertx.<String>executeBlocking(future -> {
+                    String sId = routingContext.request().getParam("seq");
+                    String tweetId = routingContext.request().getParam("tweetid");
+                    httpClient.getNow(PORT, url,
+                            "/q6i?tid=" + tid +
+                                    "&opt=r" +
+                                    "&seq=" + sId +
+                                    "&tweetid=" + tweetId, new Handler<HttpClientResponse>()  {
+                                @Override
+                                public void handle(HttpClientResponse httpClientResponse) {
+                                    httpClientResponse.bodyHandler(new Handler<Buffer>() {
+                                        @Override
+                                        public void handle(Buffer event) {
+                                            future.complete(event.getString(0, event.length()));
+                                        }
+                                    });
+                                }
+                            });
+
+                }, false, res -> {
+                    if (res.succeeded()) {
+                        routingContext.response().putHeader("content-type", "text/plain").end(res.result());
+                    } else {
+                        res.cause().printStackTrace();
+                    }
+                }); break;
+            case 'e':
+                routingContext.response().putHeader("content-type", "text/plain").end(result+"0\n");
+                httpClient.getNow(PORT, url, "/q6i?tid=" + tid + "&opt=e", response -> {});
+                break;
+
+            default: System.out.println(routingContext.request());break;
+        }
+    }
+
+    final ConcurrentHashMap<Long, TransactionUnit> q6Map = new ConcurrentHashMap<>();
+    final private void handleQ6Internal(RoutingContext routingContext){
         //q6?tid=3000001&opt=s
         //q6?tid=3000001&seq=1&opt=a&tweetid=458875845231521792&tag=ILOVE15619!12
         //q6?tid=3000001&seq=5&opt=r&tweetid=448988310417850370
@@ -153,6 +228,7 @@ public class ServerVerticle extends AbstractVerticle {
             case 's': {
                 routingContext.response().putHeader("content-type", "text/plain").end(result + "0\n");
                 vertx.<Integer>executeBlocking(future -> {
+                    //System.out.println("get s " + tid);
                     synchronized (q6Map){
                         if(q6Map.get(tid) == null){
                             q6Map.put(tid, new TransactionUnit(tid));
@@ -167,9 +243,11 @@ public class ServerVerticle extends AbstractVerticle {
 
             }
             case 'a': {
+
                 String tag = routingContext.request().getParam("tag");
                 String sId = routingContext.request().getParam("seq");
                 String tweetId = routingContext.request().getParam("tweetid");
+                //System.out.println("get a " + tid + " " + sId + " " + tweetId + " " + tag);
                 routingContext.response().putHeader("content-type", "text/plain").end(result + tag + "\n");
                 vertx.<Integer>executeBlocking(future -> {
                     synchronized (q6Map){
@@ -194,6 +272,7 @@ public class ServerVerticle extends AbstractVerticle {
                             q6Map.put(tid, new TransactionUnit(tid));
                         }
                     }
+                    //System.out.println("get r " + tid + " " + sId + " " + tweetId);
                     String text = q6Map.get(tid).read(sId, tweetId);
                     future.complete(result+text+"\n");
                 }, false, res -> {
@@ -211,6 +290,7 @@ public class ServerVerticle extends AbstractVerticle {
                             q6Map.put(tid, new TransactionUnit(tid));
                         }
                     }
+                    //System.out.println("get e ");
                     q6Map.get(tid).endChecker();
                     future.complete(result + "0");
                 }, false, res -> {
@@ -227,28 +307,17 @@ public class ServerVerticle extends AbstractVerticle {
   @Override
   final public void start() throws Exception {
     // JDBCClient client = JDBCClient.createShared(vertx, config);
-    String[] urls = {
-        "ec2-52-91-99-140.compute-1.amazonaws.com",
-        "ec2-54-173-93-194.compute-1.amazonaws.com",
-        "ec2-52-91-183-75.compute-1.amazonaws.com",
-        "ec2-54-173-94-235.compute-1.amazonaws.com",
-        "ec2-52-23-156-246.compute-1.amazonaws.com",
-        "ec2-54-172-98-131.compute-1.amazonaws.com",
-        "ec2-52-91-170-163.compute-1.amazonaws.com",
-        "ec2-54-152-144-114.compute-1.amazonaws.com"
-    };
-    SQLHandler.setMySql(urls, "obgun", "D807isfuckingyou");
-    //HbaseHandler.setHbase("ec2-54-152-174-216.compute-1.amazonaws.com");
+    SQLHandler.setMySql(SERVERS, "obgun", "D807isfuckingyou");
+      httpClient = vertx.createHttpClient();
     final Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
     router.get("/q1").handler(ServerVerticle::handleQ1);
-    //router.get("/q2").handler(ServerVerticle::handleQ2ThreadPool);
-    //router.get("/q2").handler(this::handleQ2);
     router.get("/q2").handler(this::handleQ2MySQL);
     router.get("/q3").handler(this::handleQ3MySQL);
     router.get("/q4").handler(this::handleQ4MySQL);
     router.get("/q5").handler(this::handleQ5MySQL);
       router.get("/q6").handler(this::handleQ6);
+      router.get("/q6i").handler(this::handleQ6Internal);
     router.get("/heartbeat").handler(ServerVerticle::handleHeartBeat);
     vertx.createHttpServer()
         .requestHandler(router::accept)

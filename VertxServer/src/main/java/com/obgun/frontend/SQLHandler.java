@@ -64,14 +64,13 @@ public class SQLHandler {
       return false;
 
     // TODO: uncomment this when deploying!!!!
-    /*
+
     cpds = new ComboPooledDataSource[SHARDING_COUNT];
     for (int i = 0; i < SHARDING_COUNT; ++i) {
       cpds[i] = new ComboPooledDataSource();
       if (!setDataSource(cpds[i], urls[i], user, passwd))
         return false;
     }
-    */
 
     return true;
   }
@@ -483,16 +482,21 @@ public class SQLHandler {
     return answer.toString();
   }
 
-  public static String getSqlAnswerInternalQ6(long tweetId) {
+  public static String getSqlAnswerInternalQ6(Long tweetId) {
     String answer = "";
     Connection conn = null;
     // Check whether the requested timestamp is valid or not
     ResultSet rs = null;
+    int hashCode = tweetId.toString().hashCode();
+    if (hashCode < 0)
+      hashCode *= -1;
+    hashCode %= SHARDING_COUNT;
     PreparedStatement q6Statement = null;
 
     // Request a new connection for every request
     try {
-      conn = localCpds.getConnection();
+
+      conn = cpds[hashCode].getConnection();
 
       //System.out.println("Connect to SQL");
 
