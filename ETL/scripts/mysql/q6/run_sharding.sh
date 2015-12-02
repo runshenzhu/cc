@@ -6,7 +6,7 @@ mysql -u root -pD807isfuckingyou twitter < $BASE_DIR/init.sql
 rm $TMP_FILE
 
 echo 'loading to sql' $1
-ln -s $DATA_DIR/p$1.csv $TMP_FILE
+ln -s $DATA_DIR/part-r-0000$1 $TMP_FILE
 time mysql -u root -pD807isfuckingyou --local-infile twitter < $BASE_DIR/import_data.sql
 
 time mysql -u root -pD807isfuckingyou twitter < $BASE_DIR/post.sql
