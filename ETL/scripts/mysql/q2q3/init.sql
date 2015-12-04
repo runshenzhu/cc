@@ -1,7 +1,3 @@
-DROP DATABASE IF EXISTS twitter;
-CREATE DATABASE twitter CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE twitter;
-
 DROP TABLE IF EXISTS tweets;
 
 CREATE TABLE tweets (

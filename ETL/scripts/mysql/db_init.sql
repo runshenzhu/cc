@@ -1,0 +1,7 @@
+DROP DATABASE IF EXISTS twitter;
+CREATE DATABASE twitter CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE twitter;
+
+CREATE USER 'obgun' IDENTIFIED BY 'D807isfuckingyou';
+GRANT ALL PRIVILEGES ON twitter.* TO 'obgun'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
